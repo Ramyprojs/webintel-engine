@@ -144,4 +144,14 @@ async def validate_api_key(x_gemini_api_key: str | None = Header(None)):
         )
         return {'valid': True}
     except Exception as e:
+        from google.genai.errors import APIError
+        if isinstance(e, APIError):
+            # If it's 400, 401, or 403, the key itself is definitely invalid/unauthorized
+            if getattr(e, 'code', 500) in (400, 401, 403):
+                return {'valid': False, 'error': str(e)}
+            # If it's 429 (Quota) or 503 (Unavailable), the key is real, but the service is busy.
+            # We should allow the user to save it.
+            return {'valid': True, 'warning': str(e)}
+            
+        # Fallback for unexpected connection errors
         return {'valid': False, 'error': str(e)}
