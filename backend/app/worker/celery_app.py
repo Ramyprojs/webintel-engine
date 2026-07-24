@@ -16,4 +16,4 @@ celery_app.conf.update(
     task_track_started=True,
 )
 
-celery_app.autodiscover_tasks(["app.worker.tasks"])
+celery_app.autodiscover_tasks(["app.worker"])
