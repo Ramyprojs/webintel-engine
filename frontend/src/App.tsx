@@ -70,6 +70,16 @@ function App() {
             <Route path="/" element={<JobsPage />} />
             <Route path="/jobs" element={<JobsPage />} />
             <Route path="/results" element={<ResultsPage />} />
+            <Route path="/settings" element={
+              <div className="p-8 max-w-4xl mx-auto space-y-6">
+                <h1 className="text-3xl font-light tracking-tight">Settings</h1>
+                <div className="glass-panel p-8 text-center text-slate-400">
+                  <Settings className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                  <p className="font-medium text-slate-300">Configuration Panel</p>
+                  <p className="text-sm mt-1">API keys, rate limits, and export preferences will be configurable here.</p>
+                </div>
+              </div>
+            } />
             <Route path="*" element={<div className="p-8">Not Found</div>} />
           </Routes>
         </main>

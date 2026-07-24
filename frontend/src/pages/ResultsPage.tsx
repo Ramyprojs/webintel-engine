@@ -25,7 +25,7 @@ export default function ResultsPage() {
   }, []);
 
   const handleExport = () => {
-    window.open('http://localhost:8000/api/results/export?format=csv', '_blank');
+    window.open(resultsApi.getExportUrl('csv'), '_blank');
   };
 
   return (
