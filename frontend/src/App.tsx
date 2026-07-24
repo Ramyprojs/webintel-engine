@@ -15,7 +15,6 @@ export function cn(...inputs: (string | undefined | null | false)[]) {
 function Sidebar() {
   const navItems = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/jobs', icon: Activity, label: 'Active Jobs' },
     { to: '/results', icon: Database, label: 'Results Database' },
     { to: '/settings', icon: Settings, label: 'Settings' },
   ];

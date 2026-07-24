@@ -91,6 +91,11 @@ class GeminiProvider(LLMProvider):
                 # If tenacity gave up after 4 retries
                 last_error = f"Gemini API Error: {e}"
                 logger.error(f"Gemini API totally failed on attempt {attempt}: {e}")
+                
+                # Check if it's a quota error (RESOURCE_EXHAUSTED). If so, we MUST fail fast!
+                if getattr(e, 'code', None) == 429 and "quota" in str(e).lower():
+                    raise e
+                    
                 break # Don't loop prompt strictness if the API is just down
             except Exception as e:
                 last_error = f"Unexpected Error: {e}"
@@ -106,10 +111,14 @@ class GeminiProvider(LLMProvider):
 
     def extract_batch(self, texts: List[str]) -> List[LLMExtractedData]:
         """Extract structured data from a batch of texts."""
+        import time
         results = []
         for text in texts:
             try:
                 results.append(self.extract_structured_data(text))
+                # Free tier has a 15 RPM limit (1 request every 4 seconds)
+                # Adding a 4-second sleep prevents constant 429 Too Many Requests errors.
+                time.sleep(4)
             except Exception as e:
                 logger.error(f"Failed to extract item in batch: {e}")
                 raise

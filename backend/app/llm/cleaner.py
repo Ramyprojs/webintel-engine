@@ -20,11 +20,12 @@ class DataCleaner:
         self.provider = provider
         self.batch_size = batch_size
 
-    def clean_texts(self, texts: List[str]) -> List[LLMExtractedData]:
+    def clean_texts(self, texts: List[str], progress_callback=None) -> List[LLMExtractedData]:
         """Process texts through the LLM provider and validate results.
 
         Args:
             texts: List of raw text strings to clean/structure.
+            progress_callback: Optional callable(batch_num, total_batches) to report progress.
 
         Returns:
             List of validated LLMExtractedData results. Results that fail
@@ -33,20 +34,32 @@ class DataCleaner:
         """
         logger.info(f"Cleaning {len(texts)} texts in batches of {self.batch_size}")
         all_results: List[LLMExtractedData] = []
+        total_batches = (len(texts) + self.batch_size - 1) // self.batch_size
 
         for i in range(0, len(texts), self.batch_size):
             batch = texts[i : i + self.batch_size]
             batch_num = (i // self.batch_size) + 1
-            total_batches = (len(texts) + self.batch_size - 1) // self.batch_size
             logger.info(f"Processing batch {batch_num}/{total_batches}")
 
             try:
                 batch_results = self.provider.extract_batch(batch)
             except Exception as exc:
                 logger.error(f"Batch {batch_num} failed: {exc}")
-                # Mark all items in this batch as needing review
+                
+                # Check for quota exhaustion. If so, fail the rest of the batches immediately
+                if "429" in str(exc) and "quota" in str(exc).lower():
+                    logger.error("Quota exceeded! Aborting remaining batches to avoid hanging.")
+                    # Fill the rest with needs_review
+                    for _ in range(len(texts) - len(all_results)):
+                        all_results.append(self._create_needs_review_result("Quota Exceeded - Skipped"))
+                    break
+
+                # Otherwise mark all items in this batch as needing review and continue
                 for text in batch:
                     all_results.append(self._create_needs_review_result(text))
+                
+                if progress_callback:
+                    progress_callback(batch_num, total_batches)
                 continue
 
             for idx, result in enumerate(batch_results):
@@ -63,6 +76,9 @@ class DataCleaner:
                     # Retry once
                     retry_result = self._retry_single(batch[idx])
                     all_results.append(retry_result)
+
+            if progress_callback:
+                progress_callback(batch_num, total_batches)
 
         logger.info(f"Cleaning complete: {len(all_results)} results produced")
         return all_results

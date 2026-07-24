@@ -17,7 +17,9 @@ export default function JobsPage() {
   const fetchJobs = async () => {
     try {
       const data = await jobsApi.getAll();
-      setJobs(data);
+      const myJobIds = JSON.parse(localStorage.getItem('my_job_ids') || '[]');
+      const myJobs = data.filter(job => myJobIds.includes(job.id));
+      setJobs(myJobs);
     } catch (err) {
       console.error('Failed to fetch jobs', err);
     } finally {

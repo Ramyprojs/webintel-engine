@@ -79,7 +79,11 @@ export const jobsApi = {
       input_type: inputType,
       input_value: inputValue,
     });
-    return response.data;
+    const job = response.data;
+    const myJobs = JSON.parse(localStorage.getItem('my_job_ids') || '[]');
+    myJobs.push(job.id);
+    localStorage.setItem('my_job_ids', JSON.stringify(myJobs));
+    return job;
   },
 
   get: async (id: string): Promise<Job> => {

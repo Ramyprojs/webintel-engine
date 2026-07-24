@@ -66,9 +66,18 @@ def run_cleaning_stage(session, job, gemini_api_key=None):
     from app.llm.cleaner import DataCleaner
     cleaner = DataCleaner(provider, batch_size=settings.LLM_BATCH_SIZE)
 
-    # Process all texts
+    # Process all texts with live progress updates
     texts = [page.extracted_text for page in pages]
-    results = cleaner.clean_texts(texts)
+    
+    def on_progress(batch_num, total_batches):
+        progress = 50 + int((batch_num / total_batches) * 40)
+        update_job_progress(
+            session, job,
+            progress=progress,
+            stage_detail=f"Cleaning batch {batch_num}/{total_batches}..."
+        )
+
+    results = cleaner.clean_texts(texts, progress_callback=on_progress)
 
     # Store results
     for idx, (page, result_data) in enumerate(zip(pages, results)):
@@ -93,14 +102,14 @@ def run_cleaning_stage(session, job, gemini_api_key=None):
             review_notes=result_data.error_diagnostic,
         )
         session.add(result)
-        session.commit()
-
-        progress = 50 + int((idx + 1) / len(pages) * 40)  # Progress from 50 to 90
-        update_job_progress(
-            session, job,
-            progress=progress,
-            stage_detail=f"Cleaned record {idx + 1}/{len(pages)}"
-        )
+    
+    session.commit()
+    
+    update_job_progress(
+        session, job,
+        progress=95,
+        stage_detail=f"Saved {len(pages)} cleaned records to database"
+    )
 
 
 @celery_app.task(name="app.worker.tasks.process_job", bind=True)
