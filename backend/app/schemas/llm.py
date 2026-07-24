@@ -9,5 +9,6 @@ class LLMExtractedData(BaseModel):
     contact_phone: Optional[str] = None
     address: Optional[str] = None
     summary: Optional[str] = None
-    key_data_points: Optional[dict] = None
-    confidence_score: Optional[float] = Field(None, ge=0, le=1)
+    key_data_points: Optional[dict] = Field(None, description="Arbitrary key-value pairs of other relevant numerical or categorical data extracted.")
+    confidence_score: float = Field(..., description="A score between 0.0 and 1.0 indicating how confident the extraction was.")
+    error_diagnostic: Optional[str] = Field(None, description="Diagnostic message if extraction failed after all retries.")

@@ -71,7 +71,10 @@ def run_cleaning_stage(session, job):
 
     # Store results
     for idx, (page, result_data) in enumerate(zip(pages, results)):
-        status = ResultStatus.cleaned if result_data.confidence_score and result_data.confidence_score > 0 else ResultStatus.needs_review
+        if result_data.error_diagnostic:
+            status = ResultStatus.failed if "API Error" in result_data.error_diagnostic else ResultStatus.needs_review
+        else:
+            status = ResultStatus.cleaned if result_data.confidence_score and result_data.confidence_score > 0 else ResultStatus.needs_review
         
         result = StructuredResult(
             job_id=job.id,
@@ -86,6 +89,7 @@ def run_cleaning_stage(session, job):
             key_data_points=result_data.key_data_points,
             confidence_score=result_data.confidence_score,
             status=status,
+            review_notes=result_data.error_diagnostic,
         )
         session.add(result)
         session.commit()
