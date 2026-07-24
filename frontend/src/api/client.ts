@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// Backend runs on 8000
-const API_URL = 'http://localhost:8000/api';
+// Use relative path so Vite's dev proxy handles routing to the backend.
+// In production, configure your reverse proxy (nginx, etc.) to forward /api.
+const API_URL = '/api';
 
 export const apiClient = axios.create({
   baseURL: API_URL,
@@ -46,6 +47,22 @@ export interface StructuredResult {
   created_at: string;
 }
 
+// --- Paginated Response Wrappers ---
+
+interface JobListResponse {
+  jobs: Job[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+interface ResultListResponse {
+  results: StructuredResult[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
 // --- API Methods ---
 
 export const jobsApi = {
@@ -61,18 +78,20 @@ export const jobsApi = {
     const response = await apiClient.get<Job>(`/jobs/${id}`);
     return response.data;
   },
-  
-  // Note: We'll implement a getAll in the backend if it doesn't exist, 
-  // or just fetch recent jobs for the dashboard.
+
   getAll: async (): Promise<Job[]> => {
-    const response = await apiClient.get<Job[]>('/jobs/');
-    return response.data;
+    const response = await apiClient.get<JobListResponse>('/jobs/');
+    return response.data.jobs;
   }
 };
 
 export const resultsApi = {
   getAll: async (): Promise<StructuredResult[]> => {
-    const response = await apiClient.get<StructuredResult[]>('/results/');
-    return response.data;
+    const response = await apiClient.get<ResultListResponse>('/results/');
+    return response.data.results;
+  },
+
+  getExportUrl: (format: string = 'csv'): string => {
+    return `${API_URL}/results/export?format=${format}`;
   }
 };
