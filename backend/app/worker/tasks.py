@@ -31,7 +31,7 @@ def update_job_progress(session, job, status=None, progress=None, stage_detail=N
 # Stub scraping function removed. Now handled by ScrapeEngine in app/scraping/engine.py
 
 
-def run_cleaning_stage(session, job):
+def run_cleaning_stage(session, job, gemini_api_key=None):
     """Stub cleaning stage — creates StructuredResult for each scraped page.
 
     Will be replaced with real LLM cleaning in Phase 4.
@@ -53,14 +53,15 @@ def run_cleaning_stage(session, job):
 
     # Choose provider
     from app.config import settings
-    if settings.GEMINI_API_KEY:
+    api_key = gemini_api_key or settings.GEMINI_API_KEY
+    if api_key:
         from app.llm.gemini import GeminiProvider
-        provider = GeminiProvider()
-        logger.info("Using GeminiProvider for LLM extraction")
+        provider = GeminiProvider(api_key=api_key)
+        logger.info('Using GeminiProvider for LLM extraction')
     else:
         from app.llm.mock import MockLLMProvider
         provider = MockLLMProvider()
-        logger.info("Using MockLLMProvider for LLM extraction (no API key configured)")
+        logger.info('Using MockLLMProvider for LLM extraction (no API key configured)')
 
     from app.llm.cleaner import DataCleaner
     cleaner = DataCleaner(provider, batch_size=settings.LLM_BATCH_SIZE)
@@ -117,6 +118,8 @@ def process_job(self, job_id: str):
             logger.error(f"Job {job_id} not found in database")
             return
 
+        api_key = job.config.get("gemini_api_key") if job.config else None
+
         try:
             # Stage 1: Scraping
             update_job_progress(
@@ -138,7 +141,7 @@ def process_job(self, job_id: str):
                 stage_detail="Starting LLM data cleaning..."
             )
 
-            run_cleaning_stage(session, job)
+            run_cleaning_stage(session, job, gemini_api_key=api_key)
 
             # Done
             update_job_progress(

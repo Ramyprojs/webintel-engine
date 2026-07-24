@@ -11,6 +11,14 @@ export const apiClient = axios.create({
   },
 });
 
+apiClient.interceptors.request.use((config) => {
+  const apiKey = localStorage.getItem('gemini_api_key');
+  if (apiKey && config.headers) {
+    config.headers['x-gemini-api-key'] = apiKey;
+  }
+  return config;
+});
+
 // --- Types ---
 
 export type JobStatus = 'queued' | 'scraping' | 'cleaning' | 'done' | 'partial' | 'failed';

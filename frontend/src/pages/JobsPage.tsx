@@ -37,21 +37,28 @@ export default function JobsPage() {
     if (!inputValue.trim()) return;
     
     setError('');
+    
+    const apiKey = localStorage.getItem('gemini_api_key');
+    if (!apiKey) {
+      setError('Missing Gemini API Key. Please configure it in the Settings tab first.');
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
       await jobsApi.create(inputType, inputValue);
       setInputValue('');
       await fetchJobs(); // Immediate refresh
-    } catch (err) {
-      setError('Failed to dispatch job. Please check the backend connection.');
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to dispatch job. Please check the backend connection.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 relative z-10">
       
       {/* Header */}
       <div>
@@ -60,7 +67,9 @@ export default function JobsPage() {
       </div>
 
       {/* Submission Form */}
-      <div className="glass-panel p-6">
+      <div className="glass-panel p-6 overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-primary/10 rounded-full blur-3xl -z-10 pointer-events-none" />
+        
         <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
           <Play className="w-5 h-5 text-brand-primary" />
           Dispatch New Job
@@ -79,7 +88,7 @@ export default function JobsPage() {
           </div>
           
           <div className="flex-1 relative">
-            <div className="absolute left-3 top-3 text-slate-500">
+            <div className="absolute left-3 top-3.5 text-slate-500">
               {inputType === 'domain' ? <Globe className="w-4 h-4" /> : <Search className="w-4 h-4" />}
             </div>
             <input 
@@ -95,15 +104,15 @@ export default function JobsPage() {
           <button 
             type="submit" 
             disabled={isSubmitting || !inputValue.trim()}
-            className="glass-button flex items-center gap-2"
+            className="glow-button flex items-center gap-2"
           >
-            {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+            {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-current" />}
             Start Engine
           </button>
         </form>
         {error && (
-          <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg flex items-center gap-2 text-sm">
-            <AlertCircle className="w-4 h-4" /> {error}
+          <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg flex items-center gap-2 text-sm shadow-inner shadow-red-500/10">
+            <AlertCircle className="w-4 h-4 shrink-0" /> {error}
           </div>
         )}
       </div>

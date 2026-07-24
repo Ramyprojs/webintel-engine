@@ -5,6 +5,7 @@ import { twMerge } from 'tailwind-merge';
 
 import JobsPage from './pages/JobsPage';
 import ResultsPage from './pages/ResultsPage';
+import SettingsPage from './pages/SettingsPage';
 
 // Utility for merging tailwind classes safely
 export function cn(...inputs: (string | undefined | null | false)[]) {
@@ -20,7 +21,7 @@ function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 h-screen border-r border-slate-800/50 bg-slate-950/50 backdrop-blur-xl flex flex-col fixed left-0 top-0">
+    <aside className="w-64 h-screen border-r border-slate-800/50 bg-slate-950/50 backdrop-blur-xl flex flex-col fixed left-0 top-0 z-50">
       <div className="p-6">
         <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-primary to-brand-secondary tracking-tight">
           WebIntel Engine
@@ -61,25 +62,16 @@ function App() {
     <Router>
       <div className="flex min-h-screen">
         <Sidebar />
-        <main className="flex-1 ml-64 relative">
-          {/* Subtle background glow effects */}
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-primary/10 rounded-full blur-[128px] -z-10 pointer-events-none" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-brand-secondary/10 rounded-full blur-[128px] -z-10 pointer-events-none" />
+        <main className="flex-1 ml-64 relative min-h-screen">
+          {/* Animated subtle background glow effects */}
+          <div className="fixed top-0 left-[20%] w-[500px] h-[500px] bg-brand-primary/10 rounded-full blur-[128px] -z-10 pointer-events-none animate-pulse-slow" />
+          <div className="fixed bottom-0 right-[10%] w-[600px] h-[600px] bg-brand-secondary/10 rounded-full blur-[128px] -z-10 pointer-events-none animate-pulse-slow" style={{ animationDelay: '2s' }} />
           
           <Routes>
             <Route path="/" element={<JobsPage />} />
             <Route path="/jobs" element={<JobsPage />} />
             <Route path="/results" element={<ResultsPage />} />
-            <Route path="/settings" element={
-              <div className="p-8 max-w-4xl mx-auto space-y-6">
-                <h1 className="text-3xl font-light tracking-tight">Settings</h1>
-                <div className="glass-panel p-8 text-center text-slate-400">
-                  <Settings className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                  <p className="font-medium text-slate-300">Configuration Panel</p>
-                  <p className="text-sm mt-1">API keys, rate limits, and export preferences will be configurable here.</p>
-                </div>
-              </div>
-            } />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<div className="p-8">Not Found</div>} />
           </Routes>
         </main>

@@ -14,25 +14,31 @@
 
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-200 antialiased selection:bg-brand-secondary/30 selection:text-white min-h-screen font-sans;
+    @apply bg-slate-950 text-slate-200 antialiased font-sans selection:bg-brand-primary/30 selection:text-white min-h-screen relative overflow-x-hidden;
+    /* Premium dark mesh gradient background */
     background-image: 
-      radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-      radial-gradient(at 50% 0%, hsla(225,39%,30%,0.15) 0, transparent 50%), 
-      radial-gradient(at 100% 0%, hsla(339,49%,30%,0.15) 0, transparent 50%);
+      radial-gradient(at 0% 0%, rgba(15, 23, 42, 1) 0, transparent 50%), 
+      radial-gradient(at 50% 0%, rgba(30, 41, 59, 1) 0, transparent 50%), 
+      radial-gradient(at 100% 0%, rgba(15, 23, 42, 1) 0, transparent 50%);
     background-attachment: fixed;
   }
 }
 
-@layer utilities {
+@layer components {
   .glass-panel {
-    @apply bg-glass-bg backdrop-blur-md border border-glass-border rounded-xl shadow-xl;
+    @apply bg-slate-900/40 backdrop-blur-2xl border border-slate-700/50 rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:border-slate-600/50 transition-all duration-300;
   }
   
   .glass-input {
-    @apply bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-all placeholder:text-slate-500;
+    @apply bg-slate-950/50 backdrop-blur-md border border-slate-700/50 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary/50 transition-all duration-300 placeholder:text-slate-500 shadow-inner;
   }
-  
+
   .glass-button {
-    @apply bg-gradient-to-r from-brand-primary/80 to-brand-secondary/80 hover:from-brand-primary hover:to-brand-secondary text-white font-medium py-2 px-6 rounded-lg shadow-lg shadow-brand-primary/20 transition-all hover:shadow-brand-primary/40 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+    @apply bg-slate-800/80 backdrop-blur-md border border-slate-700 hover:bg-slate-700/80 rounded-xl px-5 py-2.5 font-medium transition-all duration-300 active:scale-[0.98] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
+  }
+
+  /* Fancy animated border for the active state or important buttons */
+  .glow-button {
+    @apply relative overflow-hidden bg-brand-primary text-white font-medium px-5 py-2.5 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all duration-300 hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
   }
 }

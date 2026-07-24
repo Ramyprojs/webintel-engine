@@ -2,7 +2,7 @@ import logging
 from uuid import UUID
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from sqlalchemy import select, func
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -16,13 +16,17 @@ router = APIRouter()
 
 
 @router.post("/", response_model=JobResponse, status_code=201)
-async def create_job(job_in: JobCreate, db: DBSession):
+async def create_job(job_in: JobCreate, db: DBSession, x_gemini_api_key: str | None = Header(None)):
     """Create a new scraping job and dispatch it to the Celery worker."""
     try:
+        config = job_in.config or {}
+        if x_gemini_api_key:
+            config["gemini_api_key"] = x_gemini_api_key
+
         new_job = Job(
             input_type=job_in.input_type,
             input_value=job_in.input_value,
-            config=job_in.config,
+            config=config,
             status=JobStatus.queued,
         )
         db.add(new_job)
@@ -125,3 +129,19 @@ async def retry_job(job_id: UUID, db: DBSession):
         await db.rollback()
         logger.error(f"Database error retrying job {job_id}: {exc}")
         raise HTTPException(status_code=500, detail="Database error occurred.")
+
+
+@router.post('/validate-key')
+async def validate_api_key(x_gemini_api_key: str | None = Header(None)):
+    if not x_gemini_api_key:
+        return {'valid': False, 'error': 'No API key provided'}
+    try:
+        from google import genai
+        client = genai.Client(api_key=x_gemini_api_key)
+        response = client.models.generate_content(
+            model='gemini-3.5-flash',
+            contents='Say hi in one word.',
+        )
+        return {'valid': True}
+    except Exception as e:
+        return {'valid': False, 'error': str(e)}

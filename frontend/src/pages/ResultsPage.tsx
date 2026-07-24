@@ -29,7 +29,7 @@ export default function ResultsPage() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500 relative z-10">
       
       {/* Header */}
       <div className="flex justify-between items-end">
@@ -42,10 +42,10 @@ export default function ResultsPage() {
         </div>
         
         <div className="flex gap-3">
-          <button onClick={fetchResults} className="glass-button !px-3 !bg-slate-800 hover:!bg-slate-700 flex items-center gap-2">
+          <button onClick={fetchResults} className="glass-button !bg-slate-800 hover:!bg-slate-700 flex items-center gap-2 border-slate-700/50">
             <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
           </button>
-          <button onClick={handleExport} className="glass-button flex items-center gap-2">
+          <button onClick={handleExport} className="glass-button flex items-center gap-2 border-slate-700/50 text-emerald-400 hover:text-emerald-300">
             <Download className="w-4 h-4" />
             Export CSV
           </button>
@@ -53,15 +53,16 @@ export default function ResultsPage() {
       </div>
 
       {/* Toolbar */}
-      <div className="glass-panel p-4 flex gap-4 items-center">
+      <div className="glass-panel p-4 flex gap-4 items-center relative overflow-hidden">
+        <div className="absolute top-0 right-1/4 w-64 h-64 bg-brand-secondary/10 rounded-full blur-3xl -z-10 pointer-events-none" />
         <Filter className="w-4 h-4 text-slate-400" />
         <input 
           type="text" 
           placeholder="Filter by company name or industry..." 
-          className="glass-input flex-1 !py-1.5"
+          className="glass-input flex-1 !py-1.5 bg-slate-950/30"
           disabled
         />
-        <select className="glass-input !py-1.5 w-48" disabled>
+        <select className="glass-input !py-1.5 w-48 bg-slate-950/30" disabled>
           <option>All Statuses</option>
           <option>Cleaned</option>
           <option>Needs Review</option>
@@ -69,10 +70,10 @@ export default function ResultsPage() {
       </div>
 
       {/* Data Table */}
-      <div className="glass-panel overflow-hidden">
+      <div className="glass-panel overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-slate-900/50 text-slate-400 font-medium uppercase tracking-wider text-xs">
+            <thead className="bg-slate-900/80 text-slate-400 font-medium uppercase tracking-wider text-xs border-b border-slate-800">
               <tr>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Company</th>
@@ -81,18 +82,22 @@ export default function ResultsPage() {
                 <th className="px-6 py-4 text-right">Confidence</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50">
+            <tbody className="divide-y divide-slate-800/30">
               {loading && results.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
-                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
-                    Loading intelligence...
+                  <td colSpan={5} className="px-6 py-16 text-center text-slate-500">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-3 opacity-50" />
+                    <span className="animate-pulse">Syncing intelligence...</span>
                   </td>
                 </tr>
               ) : results.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
-                    No results found.
+                  <td colSpan={5} className="px-6 py-16 text-center text-slate-400">
+                    <Database className="w-10 h-10 mx-auto mb-4 opacity-30" />
+                    <p className="font-medium text-lg text-slate-300">No Data Extracted Yet</p>
+                    <p className="text-sm mt-2 max-w-md mx-auto text-slate-500">
+                      If your jobs completed successfully but this table is empty, the scraper likely found 0 valid pages (e.g. rate-limited by DuckDuckGo).
+                    </p>
                   </td>
                 </tr>
               ) : (
