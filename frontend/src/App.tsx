@@ -3,9 +3,8 @@ import { Activity, Database, LayoutDashboard, Settings } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-// Temporary placeholders for pages we will build
-const JobsPage = () => <div className="p-8"><h1 className="text-3xl font-light mb-4">Active Jobs</h1><div className="glass-panel p-6">Jobs view coming soon...</div></div>;
-const ResultsPage = () => <div className="p-8"><h1 className="text-3xl font-light mb-4">Data Results</h1><div className="glass-panel p-6">Results view coming soon...</div></div>;
+import JobsPage from './pages/JobsPage';
+import ResultsPage from './pages/ResultsPage';
 
 // Utility for merging tailwind classes safely
 export function cn(...inputs: (string | undefined | null | false)[]) {
