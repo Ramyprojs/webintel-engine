@@ -1,0 +1,9 @@
+{
+  "name": "webintel-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'Frontend will be built in Phase 5. API is available at http://localhost:8000'"
+  }
+}
