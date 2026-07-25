@@ -61,17 +61,32 @@ export default function ResultsPage() {
     }
   };
 
-  const handleExport = async () => {
+  const handleExport = async (customJobId?: string, customTitle?: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const targetJobId = typeof customJobId === 'string' ? customJobId : selectedJobId;
+    if (!targetJobId && typeof customJobId !== 'string' && !selectedJobId) return;
+
     try {
-      const url = selectedJobId 
-        ? `/results/export?format=csv&job_id=${selectedJobId}` 
+      const url = targetJobId 
+        ? `/results/export?format=csv&job_id=${targetJobId}` 
         : `/results/export?format=csv`;
       const response = await fetch(`/api${url}`);
       const blob = await response.blob();
       const downloadUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = downloadUrl;
-      a.download = `webintel_export_${selectedJobId ? selectedJobId.slice(0,8) : 'all'}.csv`;
+      
+      let filename = 'webintel_export.csv';
+      if (targetJobId) {
+        const jobObj = jobs.find(j => j.id === targetJobId);
+        const name = customTitle || (jobObj ? jobObj.input_value : targetJobId.slice(0, 8));
+        const cleanName = name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        filename = `webintel_${cleanName}.csv`;
+      } else {
+        filename = 'webintel_all_searches.csv';
+      }
+      
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -103,12 +118,13 @@ export default function ResultsPage() {
             <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
           </button>
           <button 
-            onClick={handleExport} 
-            disabled={results.length === 0}
+            onClick={() => handleExport()} 
+            disabled={!selectedJobId || results.length === 0}
             className="glass-button flex items-center gap-2 border-slate-700/50 text-emerald-400 hover:text-emerald-300 disabled:opacity-50"
+            title="Export CSV for selected search"
           >
             <Download className="w-4 h-4" />
-            Export CSV
+            {selectedJobId ? 'Export Site CSV' : 'Export CSV'}
           </button>
         </div>
       </div>
@@ -133,38 +149,48 @@ export default function ResultsPage() {
               </div>
             ) : (
               jobs.map(job => (
-                <button
+                <div
                   key={job.id}
+                  role="button"
                   onClick={() => setSelectedJobId(job.id)}
                   className={cn(
-                    "w-full text-left p-4 rounded-xl flex items-center gap-3 transition-all duration-300 group",
+                    "w-full text-left p-4 rounded-xl flex items-center justify-between gap-3 transition-all duration-300 group cursor-pointer",
                     selectedJobId === job.id 
                       ? "bg-brand-primary/10 border border-brand-primary/20 shadow-inner" 
                       : "hover:bg-slate-800/50 border border-transparent"
                   )}
                 >
-                  <div className={cn(
-                    "p-2 rounded-lg shrink-0",
-                    selectedJobId === job.id ? "bg-brand-primary/20 text-brand-primary" : "bg-slate-800 text-slate-400 group-hover:text-slate-300"
-                  )}>
-                    {job.input_type === 'domain' ? <Globe className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className={cn(
+                      "p-2 rounded-lg shrink-0",
+                      selectedJobId === job.id ? "bg-brand-primary/20 text-brand-primary" : "bg-slate-800 text-slate-400 group-hover:text-slate-300"
+                    )}>
+                      {job.input_type === 'domain' ? <Globe className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={cn(
+                        "font-medium truncate",
+                        selectedJobId === job.id ? "text-slate-200" : "text-slate-400 group-hover:text-slate-300"
+                      )} title={job.input_value}>
+                        {job.input_value}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1 uppercase tracking-wide flex justify-between">
+                        <span>{new Date(job.created_at).toLocaleDateString()}</span>
+                        <span className={cn(
+                          job.status === 'done' ? "text-emerald-500" :
+                          job.status === 'failed' ? "text-red-500" : "text-brand-primary"
+                        )}>{job.status}</span>
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={cn(
-                      "font-medium truncate",
-                      selectedJobId === job.id ? "text-slate-200" : "text-slate-400 group-hover:text-slate-300"
-                    )} title={job.input_value}>
-                      {job.input_value}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1 uppercase tracking-wide flex justify-between">
-                      <span>{new Date(job.created_at).toLocaleDateString()}</span>
-                      <span className={cn(
-                        job.status === 'done' ? "text-emerald-500" :
-                        job.status === 'failed' ? "text-red-500" : "text-brand-primary"
-                      )}>{job.status}</span>
-                    </p>
-                  </div>
-                </button>
+                  <button
+                    onClick={(e) => handleExport(job.id, job.input_value, e)}
+                    title={`Export CSV for ${job.input_value} independently`}
+                    className="p-2 rounded-lg bg-slate-800/80 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 border border-slate-700/50 hover:border-emerald-500/30 transition-all shrink-0 ml-1 opacity-80 hover:opacity-100"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               ))
             )}
           </div>
@@ -269,8 +295,22 @@ function ResultRow({ result, isExpanded, onToggle }: { result: StructuredResult,
             </span>
           )}
         </td>
-        <td className="px-6 py-4 font-medium text-slate-200">
-          {result.company_name || <span className="text-slate-600">Unknown</span>}
+        <td className="px-6 py-4">
+          <div className="font-medium text-slate-200">
+            {result.company_name || <span className="text-slate-600">Unknown</span>}
+          </div>
+          {result.source_url && (
+            <a
+              href={result.source_url}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              title={`Source Page: ${result.source_url}`}
+              className="text-[11px] text-slate-500 hover:text-brand-secondary flex items-center gap-1 mt-0.5 truncate max-w-[240px]"
+            >
+              <Globe className="w-2.5 h-2.5 shrink-0" /> {result.source_url.replace(/^https?:\/\//, '')}
+            </a>
+          )}
         </td>
         <td className="px-6 py-4 text-slate-400">
           {result.industry || '-'}
@@ -321,6 +361,22 @@ function ResultRow({ result, isExpanded, onToggle }: { result: StructuredResult,
                 
                 {/* Left Column: Context */}
                 <div className="space-y-4">
+                  {result.source_url && (
+                    <div className="bg-slate-800/40 p-3 rounded-lg border border-slate-700/40 flex items-center justify-between text-xs">
+                      <span className="text-slate-400 flex items-center gap-1.5 font-medium shrink-0">
+                        <Globe className="w-3.5 h-3.5 text-brand-secondary" /> Source Page URL:
+                      </span>
+                      <a 
+                        href={result.source_url}
+                        target="_blank" 
+                        rel="noreferrer"
+                        title={result.source_url}
+                        className="text-brand-primary hover:underline font-mono truncate max-w-[320px] ml-2"
+                      >
+                        {result.source_url} <ExternalLink className="w-3 h-3 inline ml-1" />
+                      </a>
+                    </div>
+                  )}
                   <div>
                     <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">AI Summary</h4>
                     <p className="text-sm text-slate-300 leading-relaxed">

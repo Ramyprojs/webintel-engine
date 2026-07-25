@@ -35,6 +35,8 @@ export type ResultStatus = 'cleaned' | 'needs_review' | 'failed';
 export interface StructuredResult {
   id: string;
   job_id: string;
+  scraped_page_id: string;
+  source_url: string | null;
   company_name: string | null;
   industry: string | null;
   website: string | null;

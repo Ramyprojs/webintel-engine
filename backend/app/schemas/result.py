@@ -10,6 +10,7 @@ class ResultResponse(BaseModel):
     id: uuid.UUID
     job_id: uuid.UUID
     scraped_page_id: uuid.UUID
+    source_url: Optional[str] = None
     company_name: Optional[str] = None
     industry: Optional[str] = None
     website: Optional[str] = None

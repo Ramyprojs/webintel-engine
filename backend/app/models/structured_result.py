@@ -29,3 +29,9 @@ class StructuredResult(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     job: Mapped["Job"] = relationship(back_populates="structured_results")
     scraped_page: Mapped["ScrapedPage"] = relationship(back_populates="structured_result")
+
+    @property
+    def source_url(self) -> Optional[str]:
+        if hasattr(self, "scraped_page") and self.scraped_page:
+            return self.scraped_page.url
+        return None

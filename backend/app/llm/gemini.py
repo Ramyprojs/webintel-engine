@@ -61,9 +61,9 @@ class GeminiProvider(LLMProvider):
         # Progressive strictness prompts (limited to 2 to reduce API usage)
         prompts = [
             # Attempt 1: Standard
-            f"You are an expert data extraction assistant. Extract structured info about a company from the raw text.\n\nYou MUST respond with valid JSON ONLY that conforms exactly to the following JSON Schema. Do NOT include markdown blocks, just the raw JSON.\n\nSCHEMA:\n{schema_json}\n\nRAW TEXT:\n{raw_text}",
+            f"You are an expert data extraction assistant. Extract structured info about a company or entity from the raw text.\n\nCRITICAL INSTRUCTION: Extract the specific company, project, or entity that is the SUBJECT of this page — not the platform, publisher, or site hosting the content, unless the page is literally the platform's own about/homepage.\n\nYou MUST respond with valid JSON ONLY that conforms exactly to the following JSON Schema. Do NOT include markdown blocks, just the raw JSON.\n\nSCHEMA:\n{schema_json}\n\nRAW TEXT:\n{raw_text}",
             # Attempt 2: Maximum Strictness
-            f"JSON ONLY. DO NOT OUTPUT ANYTHING EXCEPT A JSON DICTIONARY. MUST MATCH SCHEMA EXACTLY. IF YOU ADD ANY TEXT OUTSIDE THE BRACES, THE SYSTEM WILL CRASH.\nSCHEMA:\n{schema_json}\nTEXT:\n{raw_text}"
+            f"JSON ONLY. DO NOT OUTPUT ANYTHING EXCEPT A JSON DICTIONARY. MUST MATCH SCHEMA EXACTLY. IF YOU ADD ANY TEXT OUTSIDE THE BRACES, THE SYSTEM WILL CRASH.\n\nCRITICAL INSTRUCTION: Extract the specific company, project, or entity that is the SUBJECT of this page — not the platform, publisher, or site hosting the content, unless the page is literally the platform's own about/homepage.\n\nSCHEMA:\n{schema_json}\nTEXT:\n{raw_text}"
         ]
         
         last_error = None

@@ -5,6 +5,7 @@ from uuid import UUID
 from datetime import datetime
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import SQLAlchemyError
 from app.api.deps import DBSession
 from app.models.structured_result import StructuredResult, ResultStatus
@@ -56,7 +57,7 @@ async def list_results(
     
     count_query = select(func.count()).select_from(base_query.subquery())
     
-    query = base_query.order_by(StructuredResult.created_at.desc())
+    query = base_query.options(selectinload(StructuredResult.scraped_page)).order_by(StructuredResult.created_at.desc())
     query = query.offset((page - 1) * page_size).limit(page_size)
     
     try:
@@ -87,7 +88,7 @@ async def export_results(
     Export results matching filters. Supported formats: json, csv.
     """
     query = build_result_query(job_id, status, company_name, industry, date_from, date_to)
-    query = query.order_by(StructuredResult.created_at.desc())
+    query = query.options(selectinload(StructuredResult.scraped_page)).order_by(StructuredResult.created_at.desc())
     
     try:
         result = await db.execute(query)
@@ -96,13 +97,15 @@ async def export_results(
         if format.lower() == 'csv':
             output = io.StringIO()
             if results:
-                fields = ["id", "job_id", "status", "company_name", "industry", "contact_email", "website", "summary", "confidence_score", "review_notes", "created_at"]
+                fields = ["id", "job_id", "scraped_page_id", "source_url", "status", "company_name", "industry", "contact_email", "website", "summary", "confidence_score", "review_notes", "created_at"]
                 writer = csv.DictWriter(output, fieldnames=fields, extrasaction='ignore')
                 writer.writeheader()
                 for r in results:
                     writer.writerow({
                         "id": str(r.id),
                         "job_id": str(r.job_id),
+                        "scraped_page_id": str(r.scraped_page_id) if getattr(r, "scraped_page_id", None) else "",
+                        "source_url": r.source_url or "",
                         "status": r.status.value if hasattr(r.status, 'value') else str(r.status),
                         "company_name": r.company_name or "",
                         "industry": r.industry or "",
