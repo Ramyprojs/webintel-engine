@@ -122,25 +122,25 @@ export default function JobsPage() {
               type="button"
               onClick={() => setInputType('domain')}
               className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200",
+                "flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer select-none active:scale-95 active:translate-y-0.5",
                 inputType === 'domain'
-                  ? "bg-indigo-600 text-white shadow-md"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)] tab-active-glow"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
               )}
             >
-              <Globe className="w-3.5 h-3.5" /> Domain Crawl
+              <Globe className={cn("w-3.5 h-3.5 transition-transform duration-200", inputType === 'domain' && "scale-110 text-indigo-200")} /> Domain Crawl
             </button>
             <button
               type="button"
               onClick={() => setInputType('keyword')}
               className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200",
+                "flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer select-none active:scale-95 active:translate-y-0.5",
                 inputType === 'keyword'
-                  ? "bg-indigo-600 text-white shadow-md"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)] tab-active-glow"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
               )}
             >
-              <Search className="w-3.5 h-3.5" /> Keyword Search
+              <Search className={cn("w-3.5 h-3.5 transition-transform duration-200", inputType === 'keyword' && "scale-110 text-purple-200")} /> Keyword Search
             </button>
           </div>
         </div>

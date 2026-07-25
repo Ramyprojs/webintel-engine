@@ -159,9 +159,9 @@ export default function ResultsPage() {
                   role="button"
                   onClick={() => setSelectedJobId(job.id)}
                   className={cn(
-                    "w-full text-left p-3.5 rounded-xl flex items-center justify-between gap-3 transition-all duration-300 group cursor-pointer border",
+                    "w-full text-left p-3.5 rounded-xl flex items-center justify-between gap-3 transition-all duration-200 group cursor-pointer border active:scale-[0.97] active:translate-y-0.5 select-none relative overflow-hidden",
                     selectedJobId === job.id 
-                      ? "bg-gradient-to-r from-indigo-500/15 to-purple-500/10 border-indigo-500/30 shadow-[0_4px_20px_rgba(99,102,241,0.15)]" 
+                      ? "bg-gradient-to-r from-indigo-500/20 via-purple-500/10 to-transparent border-indigo-500/40 shadow-[0_4px_25px_rgba(99,102,241,0.2)] tab-active-glow" 
                       : "hover:bg-white/[0.03] border-transparent"
                   )}
                 >

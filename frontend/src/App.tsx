@@ -98,22 +98,35 @@ function Sidebar({ isCollapsed, onToggle, onCmdClick }: SidebarProps) {
               }
             }}
             className={({ isActive }) => cn(
-              "flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-300 group text-sm font-medium",
+              "flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm font-medium relative overflow-hidden cursor-pointer select-none active:scale-[0.94] active:translate-y-0.5",
               isCollapsed && "justify-center px-0",
               isActive 
-                ? "bg-gradient-to-r from-indigo-600/25 via-purple-600/20 to-transparent text-white border border-indigo-500/40 shadow-[0_4px_20px_rgba(99,102,241,0.2)]" 
+                ? "bg-gradient-to-r from-indigo-600/30 via-purple-600/20 to-transparent text-white border border-indigo-500/50 shadow-[0_4px_25px_rgba(99,102,241,0.25)] tab-active-glow" 
                 : "text-slate-400 hover:text-slate-100 hover:bg-white/[0.04] border border-transparent"
             )}
             title={item.label}
           >
-            <div className="flex items-center gap-3">
-              <item.icon className="w-4.5 h-4.5 transition-transform duration-300 group-hover:scale-110" />
-              {!isCollapsed && <span>{item.label}</span>}
-            </div>
-            {!isCollapsed && (
-              <span className="text-[10px] font-mono text-slate-500 bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/[0.06] group-hover:border-white/[0.12] transition-colors">
-                {item.shortcut}
-              </span>
+            {({ isActive }) => (
+              <>
+                {/* Active Glowing Indicator Bar */}
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-gradient-to-b from-indigo-400 via-purple-400 to-sky-400 shadow-[0_0_12px_rgba(99,102,241,0.8)] animate-in slide-in-from-left-2 duration-300" />
+                )}
+                
+                <div className="flex items-center gap-3">
+                  <item.icon className={cn(
+                    "w-4.5 h-4.5 transition-transform duration-300 group-hover:scale-110 group-active:scale-125 group-active:-rotate-6",
+                    isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-200"
+                  )} />
+                  {!isCollapsed && <span>{item.label}</span>}
+                </div>
+                
+                {!isCollapsed && (
+                  <span className="text-[10px] font-mono text-slate-500 bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/[0.06] group-hover:border-white/[0.12] transition-colors">
+                    {item.shortcut}
+                  </span>
+                )}
+              </>
             )}
           </NavLink>
         ))}
