@@ -37,15 +37,17 @@ function Sidebar({ isCollapsed, onToggle, onCmdClick }: SidebarProps) {
       {/* Brand Header */}
       <div className="p-4 border-b border-white/[0.06] flex items-center justify-between">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-            <Activity className="w-4 h-4" />
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="WebIntel AI Logo" 
+            className="w-9 h-9 rounded-lg object-cover border border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.4)] shrink-0"
+          />
           {!isCollapsed && (
             <div className="min-w-0 animate-in fade-in duration-200">
               <h2 className="text-sm font-semibold tracking-tight text-white truncate">
                 WebIntel Engine
               </h2>
-              <p className="text-[10px] text-slate-400 font-mono">Data Suite</p>
+              <p className="text-[10px] text-purple-300/80 font-mono">AI Data Suite</p>
             </div>
           )}
         </div>
