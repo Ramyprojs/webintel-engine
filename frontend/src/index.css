@@ -3,99 +3,60 @@
 @theme {
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   
-  --color-mercury-bg: #07080b;
-  --color-mercury-surface: #0c0e17;
-  --color-mercury-border: rgba(255, 255, 255, 0.08);
-  --color-mercury-border-hover: rgba(255, 255, 255, 0.18);
+  --color-mercury-bg: #090a0f;
+  --color-mercury-surface: #0f111a;
+  --color-mercury-border: rgba(255, 255, 255, 0.07);
   
   --color-brand-primary: #6366f1;
-  --color-brand-secondary: #a855f7;
-  --color-brand-sky: #38bdf8;
+  --color-brand-secondary: #8b5cf6;
   --color-brand-accent: #10b981;
-}
-
-@keyframes pulseGlow {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.08); }
-}
-
-@keyframes tabPulse {
-  0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7), 0 0 20px rgba(99, 102, 241, 0.4); }
-  70% { box-shadow: 0 0 0 12px rgba(99, 102, 241, 0), 0 0 35px rgba(99, 102, 241, 0.6); }
-  100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0), 0 0 20px rgba(99, 102, 241, 0.3); }
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(200%); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
-}
-
-.animate-pulse-glow {
-  animation: pulseGlow 8s ease-in-out infinite;
-}
-
-.animate-shimmer {
-  animation: shimmer 2.5s infinite;
-}
-
-.animate-float {
-  animation: float 5s ease-in-out infinite;
 }
 
 @layer base {
   body {
     @apply text-slate-200 antialiased font-sans selection:bg-indigo-500/30 selection:text-white min-h-screen relative overflow-x-hidden;
-    background-color: #07080b;
-    /* Mercury Command deep ambient mesh background */
-    background-image: 
-      radial-gradient(at 15% 15%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-      radial-gradient(at 85% 20%, rgba(168, 85, 247, 0.08) 0px, transparent 55%),
-      radial-gradient(at 50% 80%, rgba(56, 189, 248, 0.06) 0px, transparent 60%);
+    background-color: #090a0f;
+    background-image: radial-gradient(at 50% 0%, rgba(99, 102, 241, 0.07) 0px, transparent 60%);
     background-attachment: fixed;
   }
 
-  /* Custom sleek dark scrollbars */
+  /* Sleek dark scrollbars */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: rgba(7, 8, 11, 0.8);
+    background: rgba(9, 10, 15, 0.8);
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.2);
   }
 }
 
 @layer components {
-  /* Mercury Command Card System */
+  /* Clean Card System */
   .glass-panel {
-    @apply bg-[#0c0e17]/70 backdrop-blur-2xl border border-white/[0.08] rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.5)] transition-all duration-300 hover:border-indigo-500/30 hover:shadow-[0_15px_45px_rgba(0,0,0,0.7),0_0_30px_rgba(99,102,241,0.1)];
+    @apply bg-[#0f111a]/80 backdrop-blur-xl border border-white/[0.07] rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.4)] transition-colors duration-200;
   }
   
   .glass-input {
-    @apply bg-[#07080e]/80 backdrop-blur-md border border-white/[0.09] rounded-xl px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/80 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 shadow-inner;
+    @apply bg-[#07080c]/90 border border-white/[0.08] rounded-xl px-4 py-2.5 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/70 focus:ring-2 focus:ring-indigo-500/10 transition-colors duration-200 text-sm;
   }
 
   .glass-button {
-    @apply bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-slate-200 rounded-xl px-4 py-2.5 font-medium transition-all duration-300 active:scale-[0.98] shadow-md disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100;
+    @apply bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-200 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-150 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed;
   }
 
   .glow-button {
-    @apply relative overflow-hidden bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium px-5 py-2.5 rounded-xl shadow-[0_0_25px_rgba(99,102,241,0.4)] transition-all duration-300 hover:shadow-[0_0_35px_rgba(99,102,241,0.6)] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed;
+    @apply bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-xl text-sm transition-all duration-150 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed shadow-sm;
   }
 
   .command-pill {
-    @apply inline-flex items-center px-2 py-0.5 rounded-md bg-white/[0.06] border border-white/[0.12] text-[10px] font-mono text-slate-400 tracking-wider shadow-sm;
+    @apply inline-flex items-center px-2 py-0.5 rounded bg-white/[0.05] border border-white/[0.1] text-[10px] font-mono text-slate-400;
   }
 }
 
