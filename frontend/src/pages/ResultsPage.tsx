@@ -100,27 +100,32 @@ export default function ResultsPage() {
     <div className="p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500 relative z-10 flex flex-col h-[calc(100vh-4rem)]">
       
       {/* Header */}
-      <div className="flex justify-between items-end shrink-0">
+      <div className="flex justify-between items-end shrink-0 border-b border-white/[0.06] pb-6">
         <div>
-          <h1 className="text-3xl font-light tracking-tight flex items-center gap-3">
-            <Database className="w-8 h-8 text-brand-secondary" />
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[11px] font-mono text-purple-400 uppercase tracking-widest bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
+              Intelligence Warehouse
+            </span>
+          </div>
+          <h1 className="text-3xl font-semibold tracking-tight text-white flex items-center gap-3">
             Results Database
           </h1>
-          <p className="text-slate-400 mt-2">Select a search job to view and export its extracted intelligence.</p>
+          <p className="text-slate-400 text-sm mt-1">Select a search job to view and export its structured extracted intelligence.</p>
         </div>
         
         <div className="flex gap-3">
           <button 
             onClick={handleManualRefresh} 
             disabled={!selectedJobId || loading}
-            className="glass-button !bg-slate-800 hover:!bg-slate-700 flex items-center gap-2 border-slate-700/50 disabled:opacity-50"
+            className="glass-button flex items-center gap-2 border-white/10 disabled:opacity-40"
+            title="Refresh database results"
           >
-            <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
+            <RefreshCw className={cn("w-4 h-4 text-indigo-400", loading && "animate-spin")} />
           </button>
           <button 
             onClick={() => handleExport()} 
             disabled={!selectedJobId || results.length === 0}
-            className="glass-button flex items-center gap-2 border-slate-700/50 text-emerald-400 hover:text-emerald-300 disabled:opacity-50"
+            className="glow-button flex items-center gap-2 text-sm !from-emerald-600 !to-teal-600 hover:!from-emerald-500 hover:!to-teal-500 disabled:opacity-40"
             title="Export CSV for selected search"
           >
             <Download className="w-4 h-4" />
@@ -132,19 +137,19 @@ export default function ResultsPage() {
       <div className="flex gap-6 flex-1 min-h-0">
         
         {/* Left Sidebar: Jobs List */}
-        <div className="w-1/3 max-w-sm glass-panel flex flex-col overflow-hidden shrink-0">
-          <div className="p-4 border-b border-slate-800/50 bg-slate-900/50 text-sm font-medium text-slate-300 uppercase tracking-wider flex justify-between items-center">
-            Your Searches
-            <span className="bg-slate-800 text-slate-400 py-0.5 px-2 rounded-full text-xs">{jobs.length}</span>
+        <div className="w-1/3 max-w-sm glass-panel flex flex-col overflow-hidden shrink-0 border-white/[0.08]">
+          <div className="p-4 border-b border-white/[0.06] bg-white/[0.02] text-xs font-mono uppercase tracking-wider text-slate-400 flex justify-between items-center font-medium">
+            <span>Your Searches</span>
+            <span className="bg-white/[0.06] text-slate-300 py-0.5 px-2 rounded-full text-[10px] font-mono border border-white/[0.08]">{jobs.length}</span>
           </div>
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
             {loadingJobs ? (
-              <div className="p-8 text-center text-slate-500">
-                <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2" />
-                Loading...
+              <div className="p-8 text-center text-slate-500 font-mono text-xs">
+                <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-indigo-400" />
+                Loading searches...
               </div>
             ) : jobs.length === 0 ? (
-              <div className="p-8 text-center text-slate-500 text-sm">
+              <div className="p-8 text-center text-slate-500 text-xs font-mono">
                 No searches found.<br/>Go to the Dashboard to dispatch a job.
               </div>
             ) : (
@@ -154,31 +159,31 @@ export default function ResultsPage() {
                   role="button"
                   onClick={() => setSelectedJobId(job.id)}
                   className={cn(
-                    "w-full text-left p-4 rounded-xl flex items-center justify-between gap-3 transition-all duration-300 group cursor-pointer",
+                    "w-full text-left p-3.5 rounded-xl flex items-center justify-between gap-3 transition-all duration-300 group cursor-pointer border",
                     selectedJobId === job.id 
-                      ? "bg-brand-primary/10 border border-brand-primary/20 shadow-inner" 
-                      : "hover:bg-slate-800/50 border border-transparent"
+                      ? "bg-gradient-to-r from-indigo-500/15 to-purple-500/10 border-indigo-500/30 shadow-[0_4px_20px_rgba(99,102,241,0.15)]" 
+                      : "hover:bg-white/[0.03] border-transparent"
                   )}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className={cn(
-                      "p-2 rounded-lg shrink-0",
-                      selectedJobId === job.id ? "bg-brand-primary/20 text-brand-primary" : "bg-slate-800 text-slate-400 group-hover:text-slate-300"
+                      "p-2 rounded-lg shrink-0 border transition-colors",
+                      selectedJobId === job.id ? "bg-indigo-500/20 border-indigo-500/30 text-indigo-300" : "bg-white/[0.04] border-white/[0.06] text-slate-400 group-hover:text-slate-200"
                     )}>
                       {job.input_type === 'domain' ? <Globe className="w-4 h-4" /> : <Search className="w-4 h-4" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={cn(
-                        "font-medium truncate",
-                        selectedJobId === job.id ? "text-slate-200" : "text-slate-400 group-hover:text-slate-300"
+                        "font-medium text-sm truncate",
+                        selectedJobId === job.id ? "text-white" : "text-slate-300 group-hover:text-white"
                       )} title={job.input_value}>
                         {job.input_value}
                       </p>
-                      <p className="text-xs text-slate-500 mt-1 uppercase tracking-wide flex justify-between">
+                      <p className="text-[10px] font-mono text-slate-500 mt-1 uppercase tracking-wider flex justify-between">
                         <span>{new Date(job.created_at).toLocaleDateString()}</span>
                         <span className={cn(
-                          job.status === 'done' ? "text-emerald-500" :
-                          job.status === 'failed' ? "text-red-500" : "text-brand-primary"
+                          job.status === 'done' ? "text-emerald-400" :
+                          job.status === 'failed' ? "text-rose-400" : "text-indigo-400"
                         )}>{job.status}</span>
                       </p>
                     </div>
@@ -186,7 +191,7 @@ export default function ResultsPage() {
                   <button
                     onClick={(e) => handleExport(job.id, job.input_value, e)}
                     title={`Export CSV for ${job.input_value} independently`}
-                    className="p-2 rounded-lg bg-slate-800/80 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 border border-slate-700/50 hover:border-emerald-500/30 transition-all shrink-0 ml-1 opacity-80 hover:opacity-100"
+                    className="p-2 rounded-lg bg-white/[0.04] hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-300 border border-white/[0.08] hover:border-emerald-500/40 transition-all shrink-0 ml-1 opacity-80 hover:opacity-100"
                   >
                     <Download className="w-3.5 h-3.5" />
                   </button>
