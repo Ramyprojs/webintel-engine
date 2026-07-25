@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = "redis://localhost:6379/0"
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/1"
     GEMINI_API_KEY: str = ""
-    LLM_MODEL: str = "gemini-3.5-flash"
+    LLM_MODEL: str = "gemini-2.5-flash"
     SCRAPE_MAX_DEPTH: int = 1
     SCRAPE_MAX_PAGES: int = 20
     SCRAPE_RATE_LIMIT_RPS: float = 2.0

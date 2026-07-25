@@ -153,7 +153,7 @@ async def validate_api_key(x_gemini_api_key: str | None = Header(None)):
         from google import genai
         client = genai.Client(api_key=x_gemini_api_key)
         response = client.models.generate_content(
-            model='gemini-3.5-flash',
+            model='gemini-2.5-flash',
             contents='Say hi in one word.',
         )
         return {'valid': True}

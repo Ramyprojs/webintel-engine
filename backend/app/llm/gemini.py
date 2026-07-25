@@ -1,5 +1,6 @@
 import logging
 import re
+import json
 from typing import List
 from pydantic import ValidationError
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
@@ -72,17 +73,30 @@ class GeminiProvider(LLMProvider):
                 # 1. API Call (handles 503s via tenacity)
                 raw_response = self._call_api_with_retry(prompt)
                 
-                # 2. Regex Cleanup (strip anything before the first { and after the last })
-                match = re.search(r'\{.*?\}', raw_response, re.DOTALL)
+                # 2. Robust JSON Cleanup (handles stray characters, markdown fences, and trailing braces)
+                cleaned_json = raw_response.strip()
+                if cleaned_json.startswith("```json"):
+                    cleaned_json = cleaned_json[7:]
+                elif cleaned_json.startswith("```"):
+                    cleaned_json = cleaned_json[3:]
+                if cleaned_json.endswith("```"):
+                    cleaned_json = cleaned_json[:-3]
+                cleaned_json = cleaned_json.strip()
                 
-                if match:
-                    # To match the LAST closing brace (instead of the first due to non-greedy .*?), 
-                    # we do a reverse search or use a greedy match from the first brace to the last.
-                    # Since re.DOTALL is used, greedy .* will naturally match until the last closing brace.
-                    match_greedy = re.search(r'\{.*\}', raw_response, re.DOTALL)
-                    cleaned_json = match_greedy.group(0) if match_greedy else raw_response
-                else:
-                    cleaned_json = raw_response
+                # Try direct parse or backtrack from trailing characters/extra closing braces
+                start = cleaned_json.find('{')
+                if start != -1:
+                    found_valid = False
+                    for end in range(len(cleaned_json), start, -1):
+                        if cleaned_json[end-1] == '}':
+                            candidate = cleaned_json[start:end]
+                            try:
+                                json.loads(candidate)
+                                cleaned_json = candidate
+                                found_valid = True
+                                break
+                            except Exception:
+                                continue
                 
                 # 3. Validation
                 return LLMExtractedData.model_validate_json(cleaned_json)
