@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
-import { Activity, Database, LayoutDashboard, Settings, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Database, LayoutDashboard, Settings, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 

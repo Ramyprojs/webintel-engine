@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Database, Filter, Download, AlertTriangle, CheckCircle, ExternalLink, RefreshCw, Globe, Search, ChevronRight } from 'lucide-react';
+import { Database, Filter, Download, AlertTriangle, CheckCircle, ExternalLink, RefreshCw, Globe, Search } from 'lucide-react';
 import { jobsApi, resultsApi } from '../api/client';
 import type { Job, StructuredResult } from '../api/client';
 import { cn } from '../App';

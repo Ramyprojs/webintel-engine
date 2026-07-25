@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, LayoutDashboard, Database, Settings, Terminal, X, ArrowRight, Play, Globe } from 'lucide-react';
+import { Search, LayoutDashboard, Database, Settings, X, ArrowRight, Globe } from 'lucide-react';
 
 interface CommandPaletteProps {
   isOpen: boolean;

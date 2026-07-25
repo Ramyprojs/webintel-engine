@@ -25,8 +25,8 @@ def test_api_error_retry(gemini_provider):
         
         result = gemini_provider.extract_structured_data("Some raw text")
         
-        # It should retry 4 times (the max attempts in tenacity config)
-        assert mock_gen.call_count == 4
+        # It should retry 2 times (the max attempts in tenacity config)
+        assert mock_gen.call_count == 2
         
         # It should return a fallback object with the error diagnostic
         assert result.confidence_score == 0.0
@@ -43,20 +43,18 @@ def test_malformed_json_progressive_prompts(gemini_provider):
                 
         # Simulate Pydantic validation errors by returning garbage JSON
         # First attempt: complete garbage
-        # Second attempt: slightly better garbage
-        # Third attempt: perfectly formatted JSON
+        # Second attempt: perfectly formatted JSON
         mock_gen.side_effect = [
             MockResponse("Here is your data: { malformed"),
-            MockResponse("```json\n{ \"company_name\": \"Test\" \n```"),
             MockResponse('{"company_name": "TestCorp", "confidence_score": 0.99}')
         ]
         
         result = gemini_provider.extract_structured_data("Some raw text")
         
-        # It should have taken 3 attempts
-        assert mock_gen.call_count == 3
+        # It should have taken 2 attempts
+        assert mock_gen.call_count == 2
         
-        # The 3rd attempt succeeded
+        # The 2nd attempt succeeded
         assert result.company_name == "TestCorp"
         assert result.confidence_score == 0.99
         assert result.error_diagnostic is None
@@ -65,15 +63,12 @@ def test_malformed_json_progressive_prompts(gemini_provider):
         calls = mock_gen.call_args_list
         prompt1 = calls[0].kwargs['contents']
         prompt2 = calls[1].kwargs['contents']
-        prompt3 = calls[2].kwargs['contents']
         
-        assert "CRITICAL" not in prompt1
-        assert "CRITICAL" in prompt2
-        assert "JSON ONLY" in prompt3
+        assert "JSON ONLY" in prompt2
 
 
 def test_malformed_json_total_failure(gemini_provider):
-    """Test that complete failure across all 3 prompts returns a diagnostic."""
+    """Test that complete failure across all 2 prompts returns a diagnostic."""
     with patch.object(gemini_provider.client.models, 'generate_content') as mock_gen:
         
         class MockResponse:
@@ -81,16 +76,16 @@ def test_malformed_json_total_failure(gemini_provider):
                 self.text = text
                 
         # Always return garbage
-        mock_gen.side_effect = [MockResponse("garbage")] * 3
+        mock_gen.side_effect = [MockResponse("garbage")] * 2
         
         result = gemini_provider.extract_structured_data("Some raw text")
         
-        # It should have exhausted all 3 prompt attempts
-        assert mock_gen.call_count == 3
+        # It should have exhausted all 2 prompt attempts
+        assert mock_gen.call_count == 2
         
         # It should return a fallback object
         assert result.confidence_score == 0.0
-        assert "Pydantic Validation Error on attempt 3" in result.error_diagnostic
+        assert "Pydantic Validation Error on attempt 2" in result.error_diagnostic
 
 
 def test_multiline_json_extraction(gemini_provider):

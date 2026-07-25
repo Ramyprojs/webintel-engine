@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Key, CheckCircle2, AlertCircle, Lock } from 'lucide-react';
+import { Key, CheckCircle2, AlertCircle, Lock } from 'lucide-react';
 import { configApi } from '../api/client';
 import { cn } from '../App';
 
