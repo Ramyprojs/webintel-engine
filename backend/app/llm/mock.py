@@ -1,5 +1,5 @@
 import random
-from typing import List
+from typing import Callable, List, Optional
 
 from app.schemas.llm import LLMExtractedData
 
@@ -57,6 +57,16 @@ class MockLLMProvider:
             confidence_score=round(random.uniform(0.70, 0.95), 2),
         )
 
-    def extract_batch(self, texts: List[str]) -> List[LLMExtractedData]:
-        """Extract structured data from a batch of texts."""
-        return [self.extract_structured_data(text) for text in texts]
+    def extract_batch(
+        self, 
+        texts: List[str],
+        item_callback: Callable[[int, int], None] | None = None
+    ) -> List[LLMExtractedData]:
+        """Extract structured data from a batch of texts with optional progress callbacks."""
+        results = []
+        total = len(texts)
+        for i, text in enumerate(texts):
+            results.append(self.extract_structured_data(text))
+            if item_callback:
+                item_callback(i + 1, total)
+        return results
