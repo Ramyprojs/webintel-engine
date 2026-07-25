@@ -31,8 +31,10 @@ def extract_internal_links(html: str, base_url: str) -> list[str]:
             
         # Check if it's the same domain
         if parsed_full.netloc == base_domain:
-            # Strip fragments and query params for cleaner URLs
+            # Strip fragment anchor (#) but preserve query parameters for dynamic pages
             clean_url = f"{parsed_full.scheme}://{parsed_full.netloc}{parsed_full.path}"
+            if parsed_full.query:
+                clean_url += f"?{parsed_full.query}"
             internal_links.add(clean_url)
             
     return list(internal_links)
@@ -47,8 +49,9 @@ def search_for_urls(query: str, max_results: int = 5) -> list[str]:
         with DDGS() as ddgs:
             results = ddgs.text(query, max_results=max_results)
             for r in results:
-                if "href" in r:
-                    urls.append(r["href"])
+                target_url = r.get("href") or r.get("link")
+                if target_url:
+                    urls.append(target_url)
     except Exception as e:
         logger.error(f"DuckDuckGo search failed: {e}")
         
