@@ -2,7 +2,7 @@
 
   <img src="frontend/public/logo.png" alt="WebIntel Engine Logo" width="120" height="120" style="border-radius: 20%;" />
 
-  # ⚡ WebIntel Engine
+  # WebIntel Engine
   ### Asynchronous Web Scraping & Generative AI Data Extraction Platform
 
   [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -23,33 +23,33 @@
   ---
 </div>
 
-## 📌 Table of Contents
+## Table of Contents
 
-- [✨ Key Features](#-key-features)
-- [🏗 System Architecture](#-system-architecture)
-- [⚡ Tech Stack](#-tech-stack)
-- [🚀 Quick Start (Local & Docker)](#-quick-start-local--docker)
+- [Key Features](#key-features)
+- [System Architecture](#system-architecture)
+- [Tech Stack](#tech-stack)
+- [Quick Start (Local & Docker)](#quick-start-local--docker)
   - [Prerequisites](#prerequisites)
   - [Option 1: Docker Compose (Recommended)](#option-1-docker-compose-recommended)
   - [Option 2: Local Development Setup](#option-2-local-development-setup)
-- [📡 API Reference](#-api-reference)
-- [🔒 Security & Key Vault](#-security--key-vault)
-- [👨‍💻 Author & Contact](#-author--contact)
+- [API Reference](#api-reference)
+- [Security & Key Vault](#security--key-vault)
+- [Author & Contact](#author--contact)
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-- **🛡 Zero-Failure Multi-Model Fallback Chain**: Automatically rotates through Google Gemini models (`gemini-2.5-flash` → `gemini-2.0-flash` → `gemini-2.5-pro` → `gemini-2.0-flash-lite`) with rate-limit backoff. If API quotas are completely exhausted, it seamlessly engages a **High-Accuracy Heuristic Content Extractor** so no data extraction job ever fails.
-- **📂 Smart Category & Listing Page Detection**: Automatically distinguishes genre/category listing pages from single product or entity target pages. Category listings are assigned a clean `null` entity subject, `0.35` confidence score, and safely routed to `needs_review` status.
-- **🎯 Dynamic Per-Page Confidence Scoring**: Calibrates confidence scores (`0.35` to `0.95`) per page based on entity validity, domain URL presence, contact details, and summary prose quality.
-- **⚡ Real-Time Distributed Task Queue**: Celery workers powered by Redis manage background scraping jobs, link discovery, and LLM cleaning with live percentage progress tracking.
-- **🎨 Warm Printed Paper Ledger UI**: Sleek, modern interface inspired by high-end financial ledgers, built with React, Vite, Newsreader serif typography, IBM Plex Mono code styling, and TanStack Table capabilities.
-- **📊 Export Engine**: One-click export of structured intelligence into CSV and Excel formats, honoring active search/filter views.
+- **Zero-Failure Multi-Model Fallback Chain**: Automatically rotates through Google Gemini models (`gemini-2.5-flash` → `gemini-2.0-flash` → `gemini-2.5-pro` → `gemini-2.0-flash-lite`) with rate-limit backoff. If API quotas are completely exhausted, it seamlessly engages a **High-Accuracy Heuristic Content Extractor** so no data extraction job ever fails.
+- **Smart Category & Listing Page Detection**: Automatically distinguishes genre/category listing pages from single product or entity target pages. Category listings are assigned a clean `null` entity subject, `0.35` confidence score, and safely routed to `needs_review` status.
+- **Dynamic Per-Page Confidence Scoring**: Calibrates confidence scores (`0.35` to `0.95`) per page based on entity validity, domain URL presence, contact details, and summary prose quality.
+- **Real-Time Distributed Task Queue**: Celery workers powered by Redis manage background scraping jobs, link discovery, and LLM cleaning with live percentage progress tracking.
+- **Warm Printed Paper Ledger UI**: Sleek, modern interface inspired by high-end financial ledgers, built with React, Vite, Newsreader serif typography, IBM Plex Mono code styling, and TanStack Table capabilities.
+- **Export Engine**: One-click export of structured intelligence into CSV and Excel formats, honoring active search/filter views.
 
 ---
 
-## 🏗 System Architecture
+## System Architecture
 
 ```
                                   +-----------------------+
@@ -95,7 +95,7 @@
 
 ---
 
-## ⚡ Tech Stack
+## Tech Stack
 
 | Domain | Technology | Description |
 | :--- | :--- | :--- |
@@ -108,7 +108,7 @@
 
 ---
 
-## 🚀 Quick Start (Local & Docker)
+## Quick Start (Local & Docker)
 
 ### Prerequisites
 
@@ -152,7 +152,7 @@
 ```bash
 cd backend
 python3 -m venv .venv
-source .venv/bin/venv/activate  # On macOS/Linux
+source .venv/bin/activate  # On macOS/Linux
 
 pip install -r requirements.txt
 
@@ -173,7 +173,7 @@ npm run dev
 
 ---
 
-## 📡 API Reference
+## API Reference
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -187,15 +187,15 @@ npm run dev
 
 ---
 
-## 🔒 Security & Key Vault
+## Security & Key Vault
 
 Your Google Gemini API Key is stored securely and validated via a lightweight pre-flight API call prior to saving. The key is consumed dynamically by Celery workers to execute LLM data extraction without exposing secret keys in frontend bundles or logs.
 
 ---
 
-## 👨‍💻 Author & Contact
+## Author & Contact
 
-Developed with ❤️ by **Ramy Abdelamalak**
+Developed by **Ramy Abdelamalak**
 
 - **LinkedIn**: [linkedin.com/in/ramyabdelamalak](https://www.linkedin.com/in/ramyabdelamalak)
 - **GitHub**: [github.com/Ramyprojs](https://github.com/Ramyprojs)
