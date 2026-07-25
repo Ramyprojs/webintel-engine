@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Play, Search, Globe, AlertCircle, RefreshCw, FileText } from 'lucide-react';
 import { jobsApi, configApi } from '../api/client';
 import type { Job, InputType } from '../api/client';
 import { cn } from '../App';
 
 export default function JobsPage() {
+  const [searchParams] = useSearchParams();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasKey, setHasKey] = useState(true);
   
   // Form state
   const [inputType, setInputType] = useState<InputType>('domain');
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState(searchParams.get('input') || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
