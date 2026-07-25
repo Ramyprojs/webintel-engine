@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Play, Search, Globe, AlertCircle, RefreshCw, FileText } from 'lucide-react';
-import { jobsApi } from '../api/client';
+import { jobsApi, configApi } from '../api/client';
 import type { Job, InputType } from '../api/client';
 import { cn } from '../App';
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasKey, setHasKey] = useState(true);
   
   // Form state
   const [inputType, setInputType] = useState<InputType>('domain');
@@ -20,8 +21,11 @@ export default function JobsPage() {
       const myJobIds = JSON.parse(localStorage.getItem('my_job_ids') || '[]');
       const myJobs = data.filter(job => myJobIds.includes(job.id));
       setJobs(myJobs);
+      
+      const status = await configApi.getStatus();
+      setHasKey(status.has_valid_key);
     } catch (err) {
-      console.error('Failed to fetch jobs', err);
+      console.error('Failed to fetch jobs or config', err);
     } finally {
       setLoading(false);
     }
@@ -40,9 +44,10 @@ export default function JobsPage() {
     
     setError('');
     
-    const apiKey = localStorage.getItem('gemini_api_key');
-    if (!apiKey) {
+    const status = await configApi.getStatus();
+    if (!status.has_valid_key) {
       setError('Missing Gemini API Key. Please configure it in the Settings tab first.');
+      setHasKey(false);
       return;
     }
 
@@ -72,6 +77,19 @@ export default function JobsPage() {
       <div className="glass-panel p-6 overflow-hidden relative">
         <div className="absolute top-0 right-0 w-64 h-64 bg-brand-primary/10 rounded-full blur-3xl -z-10 pointer-events-none" />
         
+        {!hasKey && (
+          <div className="absolute inset-0 z-20 bg-slate-950/60 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6 animate-in fade-in duration-300">
+            <AlertCircle className="w-8 h-8 text-amber-400 mb-3" />
+            <h3 className="text-lg font-medium text-slate-200">API Key Required</h3>
+            <p className="text-sm text-slate-400 max-w-sm mt-1 mb-4">
+              You must configure a valid Gemini API key before dispatching any background scraping jobs.
+            </p>
+            <a href="/settings" className="glass-button !bg-brand-primary/20 text-brand-primary hover:!bg-brand-primary/30 text-sm">
+              Go to Settings
+            </a>
+          </div>
+        )}
+
         <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
           <Play className="w-5 h-5 text-brand-primary" />
           Dispatch New Job

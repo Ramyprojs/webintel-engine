@@ -11,13 +11,7 @@ export const apiClient = axios.create({
   },
 });
 
-apiClient.interceptors.request.use((config) => {
-  const apiKey = localStorage.getItem('gemini_api_key');
-  if (apiKey && config.headers) {
-    config.headers['x-gemini-api-key'] = apiKey;
-  }
-  return config;
-});
+// Interceptor removed since API key is managed securely on the backend
 
 // --- Types ---
 
@@ -98,12 +92,25 @@ export const jobsApi = {
 };
 
 export const resultsApi = {
-  getAll: async (): Promise<StructuredResult[]> => {
-    const response = await apiClient.get<ResultListResponse>('/results/');
+  getAll: async (jobId?: string): Promise<StructuredResult[]> => {
+    const url = jobId ? `/results/?job_id=${jobId}` : '/results/';
+    const response = await apiClient.get<ResultListResponse>(url);
     return response.data.results;
   },
 
   getExportUrl: (format: string = 'csv'): string => {
     return `${API_URL}/results/export?format=${format}`;
+  }
+};
+
+export const configApi = {
+  getStatus: async (): Promise<{ has_valid_key: boolean }> => {
+    const response = await apiClient.get<{ has_valid_key: boolean }>('/config/status');
+    return response.data;
+  },
+  
+  setKey: async (apiKey: string): Promise<{ message: string }> => {
+    const response = await apiClient.post<{ message: string }>('/config/key', { api_key: apiKey });
+    return response.data;
   }
 };

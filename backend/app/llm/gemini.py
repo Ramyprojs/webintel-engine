@@ -19,11 +19,16 @@ class GeminiProvider(LLMProvider):
     """LLM Provider implementation using Google Gemini API."""
 
     def __init__(self, api_key: str = None, model: str = None):
-        self.api_key = api_key or settings.GEMINI_API_KEY
+        if not api_key:
+            import asyncio
+            from app.dynamic_config import DynamicConfig
+            api_key = asyncio.run(DynamicConfig.get_gemini_key())
+            
+        self.api_key = api_key
         self.model = model or settings.LLM_MODEL
         
         if not self.api_key:
-            raise ValueError("GEMINI_API_KEY must be provided")
+            raise ValueError("GEMINI_API_KEY must be provided via config")
             
         self.client = genai.Client(api_key=self.api_key)
         
@@ -31,8 +36,8 @@ class GeminiProvider(LLMProvider):
         # Gemini's structured output schema (response_schema) can fail
         # on arbitrary dictionaries (additionalProperties).
     @retry(
-        wait=wait_exponential(multiplier=1, min=2, max=10),
-        stop=stop_after_attempt(4),
+        wait=wait_exponential(multiplier=2, min=4, max=30),
+        stop=stop_after_attempt(2),
         retry=retry_if_exception_type(APIError),
         reraise=True
     )
@@ -52,13 +57,11 @@ class GeminiProvider(LLMProvider):
         """Extract structured data from a single text using Gemini."""
         schema_json = LLMExtractedData.model_json_schema()
         
-        # Progressive strictness prompts
+        # Progressive strictness prompts (limited to 2 to reduce API usage)
         prompts = [
             # Attempt 1: Standard
             f"You are an expert data extraction assistant. Extract structured info about a company from the raw text.\n\nYou MUST respond with valid JSON ONLY that conforms exactly to the following JSON Schema. Do NOT include markdown blocks, just the raw JSON.\n\nSCHEMA:\n{schema_json}\n\nRAW TEXT:\n{raw_text}",
-            # Attempt 2: Stricter
-            f"Extract company info to JSON. CRITICAL: Your entire response must be a single, parseable JSON object. NO markdown fences like ```json. NO preamble. NO trailing text. ONLY output the JSON object matching this schema:\n\nSCHEMA:\n{schema_json}\n\nRAW TEXT:\n{raw_text}",
-            # Attempt 3: Maximum Strictness
+            # Attempt 2: Maximum Strictness
             f"JSON ONLY. DO NOT OUTPUT ANYTHING EXCEPT A JSON DICTIONARY. MUST MATCH SCHEMA EXACTLY. IF YOU ADD ANY TEXT OUTSIDE THE BRACES, THE SYSTEM WILL CRASH.\nSCHEMA:\n{schema_json}\nTEXT:\n{raw_text}"
         ]
         
@@ -113,12 +116,14 @@ class GeminiProvider(LLMProvider):
         """Extract structured data from a batch of texts."""
         import time
         results = []
-        for text in texts:
+        for idx, text in enumerate(texts):
             try:
                 results.append(self.extract_structured_data(text))
-                # Free tier has a 15 RPM limit (1 request every 4 seconds)
-                # Adding a 4-second sleep prevents constant 429 Too Many Requests errors.
-                time.sleep(4)
+                # Free tier limit is 5 RPM (1 request every 13 seconds).
+                # We sleep 13s between items to stay safely under the limit.
+                if idx < len(texts) - 1:
+                    logger.info(f"Rate limiting: sleeping 13s before next API call ({idx+1}/{len(texts)})")
+                    time.sleep(13)
             except Exception as e:
                 logger.error(f"Failed to extract item in batch: {e}")
                 raise

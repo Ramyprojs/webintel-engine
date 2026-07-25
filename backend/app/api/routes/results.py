@@ -96,7 +96,7 @@ async def export_results(
         if format.lower() == 'csv':
             output = io.StringIO()
             if results:
-                fields = ["id", "job_id", "status", "company_name", "industry", "created_at"]
+                fields = ["id", "job_id", "status", "company_name", "industry", "contact_email", "website", "summary", "confidence_score", "review_notes", "created_at"]
                 writer = csv.DictWriter(output, fieldnames=fields, extrasaction='ignore')
                 writer.writeheader()
                 for r in results:
@@ -104,8 +104,13 @@ async def export_results(
                         "id": str(r.id),
                         "job_id": str(r.job_id),
                         "status": r.status.value if hasattr(r.status, 'value') else str(r.status),
-                        "company_name": r.company_name,
-                        "industry": r.industry,
+                        "company_name": r.company_name or "",
+                        "industry": r.industry or "",
+                        "contact_email": r.contact_email or "",
+                        "website": r.website or "",
+                        "summary": r.summary or "",
+                        "confidence_score": r.confidence_score if r.confidence_score else "",
+                        "review_notes": r.review_notes or "",
                         "created_at": r.created_at.isoformat() if r.created_at else ""
                     })
             

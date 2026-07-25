@@ -1,17 +1,52 @@
 import { useEffect, useState } from 'react';
-import { Database, Filter, Download, AlertTriangle, CheckCircle, ExternalLink, RefreshCw } from 'lucide-react';
-import { resultsApi } from '../api/client';
-import type { StructuredResult } from '../api/client';
+import { Database, Filter, Download, AlertTriangle, CheckCircle, ExternalLink, RefreshCw, Globe, Search, ChevronRight } from 'lucide-react';
+import { jobsApi, resultsApi } from '../api/client';
+import type { Job, StructuredResult } from '../api/client';
 import { cn } from '../App';
 
 export default function ResultsPage() {
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [results, setResults] = useState<StructuredResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingJobs, setLoadingJobs] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const fetchResults = async () => {
+  // Load jobs initially
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const data = await jobsApi.getAll();
+        const myJobIds = JSON.parse(localStorage.getItem('my_job_ids') || '[]');
+        const myJobs = data.filter(job => myJobIds.includes(job.id));
+        setJobs(myJobs);
+        if (myJobs.length > 0 && !selectedJobId) {
+          setSelectedJobId(myJobs[0].id);
+        }
+      } catch (err) {
+        console.error('Failed to fetch jobs for results sidebar', err);
+      } finally {
+        setLoadingJobs(false);
+      }
+    };
+    fetchJobs();
+  }, []);
+
+  // Load results when a job is selected
+  useEffect(() => {
+    if (selectedJobId) {
+      fetchResultsForJob(selectedJobId);
+    } else {
+      setResults([]);
+      setLoading(false);
+    }
+  }, [selectedJobId]);
+
+  const fetchResultsForJob = async (jobId: string) => {
+    setLoading(true);
+    setExpandedId(null);
     try {
-      const data = await resultsApi.getAll();
+      const data = await resultsApi.getAll(jobId);
       setResults(data);
     } catch (err) {
       console.error('Failed to fetch results', err);
@@ -20,98 +55,191 @@ export default function ResultsPage() {
     }
   };
 
-  useEffect(() => {
-    fetchResults();
-  }, []);
+  const handleManualRefresh = () => {
+    if (selectedJobId) {
+      fetchResultsForJob(selectedJobId);
+    }
+  };
 
-  const handleExport = () => {
-    window.open(resultsApi.getExportUrl('csv'), '_blank');
+  const handleExport = async () => {
+    try {
+      const url = selectedJobId 
+        ? `/results/export?format=csv&job_id=${selectedJobId}` 
+        : `/results/export?format=csv`;
+      const response = await fetch(`/api${url}`);
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `webintel_export_${selectedJobId ? selectedJobId.slice(0,8) : 'all'}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error('Export failed', err);
+    }
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500 relative z-10">
+    <div className="p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500 relative z-10 flex flex-col h-[calc(100vh-4rem)]">
       
       {/* Header */}
-      <div className="flex justify-between items-end">
+      <div className="flex justify-between items-end shrink-0">
         <div>
           <h1 className="text-3xl font-light tracking-tight flex items-center gap-3">
             <Database className="w-8 h-8 text-brand-secondary" />
             Results Database
           </h1>
-          <p className="text-slate-400 mt-2">View and export extracted LLM intelligence.</p>
+          <p className="text-slate-400 mt-2">Select a search job to view and export its extracted intelligence.</p>
         </div>
         
         <div className="flex gap-3">
-          <button onClick={fetchResults} className="glass-button !bg-slate-800 hover:!bg-slate-700 flex items-center gap-2 border-slate-700/50">
+          <button 
+            onClick={handleManualRefresh} 
+            disabled={!selectedJobId || loading}
+            className="glass-button !bg-slate-800 hover:!bg-slate-700 flex items-center gap-2 border-slate-700/50 disabled:opacity-50"
+          >
             <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
           </button>
-          <button onClick={handleExport} className="glass-button flex items-center gap-2 border-slate-700/50 text-emerald-400 hover:text-emerald-300">
+          <button 
+            onClick={handleExport} 
+            disabled={results.length === 0}
+            className="glass-button flex items-center gap-2 border-slate-700/50 text-emerald-400 hover:text-emerald-300 disabled:opacity-50"
+          >
             <Download className="w-4 h-4" />
             Export CSV
           </button>
         </div>
       </div>
 
-      {/* Toolbar */}
-      <div className="glass-panel p-4 flex gap-4 items-center relative overflow-hidden">
-        <div className="absolute top-0 right-1/4 w-64 h-64 bg-brand-secondary/10 rounded-full blur-3xl -z-10 pointer-events-none" />
-        <Filter className="w-4 h-4 text-slate-400" />
-        <input 
-          type="text" 
-          placeholder="Filter by company name or industry..." 
-          className="glass-input flex-1 !py-1.5 bg-slate-950/30"
-          disabled
-        />
-        <select className="glass-input !py-1.5 w-48 bg-slate-950/30" disabled>
-          <option>All Statuses</option>
-          <option>Cleaned</option>
-          <option>Needs Review</option>
-        </select>
-      </div>
-
-      {/* Data Table */}
-      <div className="glass-panel overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-slate-900/80 text-slate-400 font-medium uppercase tracking-wider text-xs border-b border-slate-800">
-              <tr>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Company</th>
-                <th className="px-6 py-4">Industry</th>
-                <th className="px-6 py-4">Contact</th>
-                <th className="px-6 py-4 text-right">Confidence</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/30">
-              {loading && results.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-16 text-center text-slate-500">
-                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-3 opacity-50" />
-                    <span className="animate-pulse">Syncing intelligence...</span>
-                  </td>
-                </tr>
-              ) : results.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-16 text-center text-slate-400">
-                    <Database className="w-10 h-10 mx-auto mb-4 opacity-30" />
-                    <p className="font-medium text-lg text-slate-300">No Data Extracted Yet</p>
-                    <p className="text-sm mt-2 max-w-md mx-auto text-slate-500">
-                      If your jobs completed successfully but this table is empty, the scraper likely found 0 valid pages (e.g. rate-limited by DuckDuckGo).
+      <div className="flex gap-6 flex-1 min-h-0">
+        
+        {/* Left Sidebar: Jobs List */}
+        <div className="w-1/3 max-w-sm glass-panel flex flex-col overflow-hidden shrink-0">
+          <div className="p-4 border-b border-slate-800/50 bg-slate-900/50 text-sm font-medium text-slate-300 uppercase tracking-wider flex justify-between items-center">
+            Your Searches
+            <span className="bg-slate-800 text-slate-400 py-0.5 px-2 rounded-full text-xs">{jobs.length}</span>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2 space-y-1">
+            {loadingJobs ? (
+              <div className="p-8 text-center text-slate-500">
+                <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2" />
+                Loading...
+              </div>
+            ) : jobs.length === 0 ? (
+              <div className="p-8 text-center text-slate-500 text-sm">
+                No searches found.<br/>Go to the Dashboard to dispatch a job.
+              </div>
+            ) : (
+              jobs.map(job => (
+                <button
+                  key={job.id}
+                  onClick={() => setSelectedJobId(job.id)}
+                  className={cn(
+                    "w-full text-left p-4 rounded-xl flex items-center gap-3 transition-all duration-300 group",
+                    selectedJobId === job.id 
+                      ? "bg-brand-primary/10 border border-brand-primary/20 shadow-inner" 
+                      : "hover:bg-slate-800/50 border border-transparent"
+                  )}
+                >
+                  <div className={cn(
+                    "p-2 rounded-lg shrink-0",
+                    selectedJobId === job.id ? "bg-brand-primary/20 text-brand-primary" : "bg-slate-800 text-slate-400 group-hover:text-slate-300"
+                  )}>
+                    {job.input_type === 'domain' ? <Globe className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={cn(
+                      "font-medium truncate",
+                      selectedJobId === job.id ? "text-slate-200" : "text-slate-400 group-hover:text-slate-300"
+                    )} title={job.input_value}>
+                      {job.input_value}
                     </p>
-                  </td>
+                    <p className="text-xs text-slate-500 mt-1 uppercase tracking-wide flex justify-between">
+                      <span>{new Date(job.created_at).toLocaleDateString()}</span>
+                      <span className={cn(
+                        job.status === 'done' ? "text-emerald-500" :
+                        job.status === 'failed' ? "text-red-500" : "text-brand-primary"
+                      )}>{job.status}</span>
+                    </p>
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Right Area: Results Data Table */}
+        <div className="flex-1 glass-panel overflow-hidden shadow-2xl flex flex-col">
+          <div className="p-4 border-b border-slate-800/50 flex gap-4 items-center bg-slate-900/30 relative overflow-hidden shrink-0">
+            <div className="absolute top-0 right-1/4 w-64 h-64 bg-brand-secondary/10 rounded-full blur-3xl -z-10 pointer-events-none" />
+            <Filter className="w-4 h-4 text-slate-400" />
+            <input 
+              type="text" 
+              placeholder="Filter by company name or industry..." 
+              className="glass-input flex-1 !py-1.5 bg-slate-950/30"
+              disabled
+            />
+            <select className="glass-input !py-1.5 w-48 bg-slate-950/30" disabled>
+              <option>All Statuses</option>
+              <option>Cleaned</option>
+              <option>Needs Review</option>
+            </select>
+          </div>
+
+          <div className="flex-1 overflow-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-slate-900/80 text-slate-400 font-medium uppercase tracking-wider text-xs border-b border-slate-800 sticky top-0 z-10 backdrop-blur-md">
+                <tr>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Company</th>
+                  <th className="px-6 py-4">Industry</th>
+                  <th className="px-6 py-4">Contact</th>
+                  <th className="px-6 py-4 text-right">Confidence</th>
                 </tr>
-              ) : (
-                results.map((result) => (
-                  <ResultRow 
-                    key={result.id} 
-                    result={result} 
-                    isExpanded={expandedId === result.id}
-                    onToggle={() => setExpandedId(expandedId === result.id ? null : result.id)}
-                  />
-                ))
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-800/30">
+                {!selectedJobId ? (
+                   <tr>
+                     <td colSpan={5} className="px-6 py-24 text-center text-slate-400">
+                       <Database className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                       <p className="font-medium text-lg text-slate-300">Select a Search</p>
+                       <p className="text-sm mt-2 max-w-sm mx-auto text-slate-500">
+                         Click on a job from the left sidebar to view its extracted results here.
+                       </p>
+                     </td>
+                   </tr>
+                ) : loading && results.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-24 text-center text-slate-500">
+                      <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-3 opacity-50" />
+                      <span className="animate-pulse">Loading intelligence...</span>
+                    </td>
+                  </tr>
+                ) : results.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-24 text-center text-slate-400">
+                      <Database className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                      <p className="font-medium text-lg text-slate-300">No Data Extracted</p>
+                      <p className="text-sm mt-2 max-w-sm mx-auto text-slate-500">
+                        If the job completed successfully, the scraper likely found 0 valid pages (e.g. rate-limited by DuckDuckGo).
+                      </p>
+                    </td>
+                  </tr>
+                ) : (
+                  results.map((result) => (
+                    <ResultRow 
+                      key={result.id} 
+                      result={result} 
+                      isExpanded={expandedId === result.id}
+                      onToggle={() => setExpandedId(expandedId === result.id ? null : result.id)}
+                    />
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

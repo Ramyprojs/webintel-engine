@@ -7,7 +7,7 @@ from sqlalchemy import select, func
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.deps import DBSession
-from app.models.job import Job, JobStatus
+from app.models.job import Job, JobStatus, InputType
 from app.schemas.job import JobCreate, JobResponse, JobListResponse
 
 logger = logging.getLogger(__name__)
@@ -16,16 +16,30 @@ router = APIRouter()
 
 
 @router.post("/", response_model=JobResponse, status_code=201)
-async def create_job(job_in: JobCreate, db: DBSession, x_gemini_api_key: str | None = Header(None)):
-    """Create a new scraping job and dispatch it to the Celery worker."""
+async def create_job(job_in: JobCreate, db: DBSession):
+    """Create a new job and trigger the worker."""
+    
+    # Pre-flight check: ensure we have a valid API key configured globally
+    from app.dynamic_config import DynamicConfig
+    api_key = await DynamicConfig.get_gemini_key(db)
+    if not api_key:
+        raise HTTPException(
+            status_code=400, 
+            detail="No valid Gemini API key configured. Please set one in Settings before dispatching jobs."
+        )
+
+    # Convert domain to https if missing
+    val = job_in.input_value
+    if job_in.input_type == InputType.domain and not val.startswith("http"):
+        val = f"https://{val}"
+
     try:
         config = job_in.config or {}
-        if x_gemini_api_key:
-            config["gemini_api_key"] = x_gemini_api_key
+        config["gemini_api_key"] = api_key
 
         new_job = Job(
             input_type=job_in.input_type,
-            input_value=job_in.input_value,
+            input_value=val,
             config=config,
             status=JobStatus.queued,
         )
