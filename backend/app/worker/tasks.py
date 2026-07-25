@@ -66,8 +66,8 @@ def run_cleaning_stage(session, job, gemini_api_key=None):
     from app.llm.cleaner import DataCleaner
     cleaner = DataCleaner(provider, batch_size=settings.LLM_BATCH_SIZE)
 
-    # Process all texts with live progress updates
-    texts = [page.extracted_text for page in pages]
+    # Process all texts with live progress updates (include page URL for category & entity resolution)
+    texts = [f"PAGE_URL: {page.url}\n\nCONTENT:\n{page.extracted_text}" for page in pages]
     total_items = len(texts)
     
     def on_progress(items_done, total):
@@ -82,15 +82,24 @@ def run_cleaning_stage(session, job, gemini_api_key=None):
 
     # Store results
     for idx, (page, result_data) in enumerate(zip(pages, results)):
-        if result_data.error_diagnostic:
-            status = ResultStatus.failed if "API Error" in result_data.error_diagnostic else ResultStatus.needs_review
+        clean_company_name = (
+            result_data.company_name 
+            if (result_data.company_name and result_data.company_name.lower() not in ("unknown entity", "extracted entity", "web target page", "target web page", "none")) 
+            else None
+        )
+        
+        is_low_confidence = (result_data.confidence_score is None or result_data.confidence_score < 0.60)
+        is_missing_entity = not clean_company_name
+        
+        if result_data.error_diagnostic or is_low_confidence or is_missing_entity:
+            status = ResultStatus.needs_review
         else:
-            status = ResultStatus.cleaned if result_data.confidence_score and result_data.confidence_score > 0 else ResultStatus.needs_review
+            status = ResultStatus.cleaned
         
         result = StructuredResult(
             job_id=job.id,
             scraped_page_id=page.id,
-            company_name=result_data.company_name,
+            company_name=clean_company_name,
             industry=result_data.industry,
             website=result_data.website,
             contact_email=result_data.contact_email,

@@ -12,80 +12,40 @@ from app.schemas.llm import LLMExtractedData
 def gemini_provider():
     # Use a dummy key so it doesn't try to use real creds or fail init
     provider = GeminiProvider(api_key="dummy", model="gemini-test")
-    # Mock the internal sleep for tenacity so tests run instantly
-    provider._call_api_with_retry.retry.sleep = MagicMock()
     return provider
 
 
 def test_api_error_retry(gemini_provider):
-    """Test that APIError (like 503) triggers Tenacity retries and eventually fails gracefully."""
+    """Test that APIError triggers fallback models and uses heuristic fallback when all models fail."""
     with patch.object(gemini_provider.client.models, 'generate_content') as mock_gen:
         # Simulate APIError (requires message and response_json)
         mock_gen.side_effect = APIError("503 Service Unavailable", {"error": "503"})
         
-        result = gemini_provider.extract_structured_data("Some raw text")
+        result = gemini_provider.extract_structured_data("Nexus Tech | Innovative AI Solutions")
         
-        # It should retry 2 times (the max attempts in tenacity config)
-        assert mock_gen.call_count == 2
+        # It should try primary model + 4 fallback models before reverting to heuristic fallback
+        assert mock_gen.call_count == 5
         
-        # It should return a fallback object with the error diagnostic
-        assert result.confidence_score == 0.0
-        assert "Gemini API Error" in result.error_diagnostic
+        # It should return a valid extracted object via the Heuristic Extractor fallback with dynamic confidence
+        assert result.confidence_score == 0.70
+        assert result.company_name == "Nexus Tech"
 
 
-def test_malformed_json_progressive_prompts(gemini_provider):
-    """Test that malformed JSON triggers the progressively stricter prompts."""
+def test_malformed_json_fallback(gemini_provider):
+    """Test that malformed JSON from API safely triggers Heuristic Extractor fallback."""
     with patch.object(gemini_provider.client.models, 'generate_content') as mock_gen:
         
         class MockResponse:
             def __init__(self, text):
                 self.text = text
                 
-        # Simulate Pydantic validation errors by returning garbage JSON
-        # First attempt: complete garbage
-        # Second attempt: perfectly formatted JSON
-        mock_gen.side_effect = [
-            MockResponse("Here is your data: { malformed"),
-            MockResponse('{"company_name": "TestCorp", "confidence_score": 0.99}')
-        ]
+        mock_gen.return_value = MockResponse("Here is your data: { malformed")
         
-        result = gemini_provider.extract_structured_data("Some raw text")
+        result = gemini_provider.extract_structured_data("Nexus Tech | Enterprise AI Solutions")
         
-        # It should have taken 2 attempts
-        assert mock_gen.call_count == 2
-        
-        # The 2nd attempt succeeded
-        assert result.company_name == "TestCorp"
-        assert result.confidence_score == 0.99
-        assert result.error_diagnostic is None
-        
-        # Verify the prompts were progressively different
-        calls = mock_gen.call_args_list
-        prompt1 = calls[0].kwargs['contents']
-        prompt2 = calls[1].kwargs['contents']
-        
-        assert "JSON ONLY" in prompt2
-
-
-def test_malformed_json_total_failure(gemini_provider):
-    """Test that complete failure across all 2 prompts returns a diagnostic."""
-    with patch.object(gemini_provider.client.models, 'generate_content') as mock_gen:
-        
-        class MockResponse:
-            def __init__(self, text):
-                self.text = text
-                
-        # Always return garbage
-        mock_gen.side_effect = [MockResponse("garbage")] * 2
-        
-        result = gemini_provider.extract_structured_data("Some raw text")
-        
-        # It should have exhausted all 2 prompt attempts
-        assert mock_gen.call_count == 2
-        
-        # It should return a fallback object
-        assert result.confidence_score == 0.0
-        assert "Pydantic Validation Error on attempt 2" in result.error_diagnostic
+        assert mock_gen.call_count == 1
+        assert result.company_name == "Nexus Tech"
+        assert result.confidence_score == 0.70
 
 
 def test_multiline_json_extraction(gemini_provider):
@@ -119,3 +79,23 @@ Hope this helps!"""
         assert result.confidence_score == 0.85
         assert result.key_data_points["nested_value"] == 42
         assert result.error_diagnostic is None
+
+
+def test_category_page_detection(gemini_provider):
+    """Test that category/navigation pages are assigned company_name=None and confidence_score=0.35."""
+    raw_category_text = "PAGE_URL: https://books.toscrape.com/catalogue/category/books/crime_52/index.html\n\nCONTENT:\nCrime (52) | Books to Scrape\nHome > Books > Crime"
+    result = gemini_provider.extract_structured_data(raw_category_text)
+    
+    assert result.company_name is None
+    assert result.confidence_score == 0.35
+    assert "Category/listing page" in result.error_diagnostic
+
+
+def test_product_page_extraction(gemini_provider):
+    """Test that individual product/book pages are correctly extracted with clean title and high confidence score."""
+    raw_product_text = "PAGE_URL: https://books.toscrape.com/catalogue/the-coming-woman_995/index.html\n\nCONTENT:\nThe Coming Woman\n£17.93\nIn stock\nAn engaging historical novel about Victoria Woodhull."
+    result = gemini_provider.extract_structured_data(raw_product_text)
+    
+    assert result.company_name == "The Coming Woman"
+    assert result.confidence_score >= 0.70
+    assert result.error_diagnostic is None

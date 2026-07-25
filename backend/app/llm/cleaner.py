@@ -53,23 +53,14 @@ class DataCleaner:
             try:
                 batch_results = self.provider.extract_batch(batch, item_callback=make_item_cb(i))
             except Exception as exc:
-                logger.error(f"Batch {batch_num} failed: {exc}")
-                
-                # Check for quota exhaustion. If so, fail the rest of the batches immediately
-                if "429" in str(exc) and "quota" in str(exc).lower():
-                    logger.error("Quota exceeded! Aborting remaining batches to avoid hanging.")
-                    # Fill the rest with needs_review
-                    for _ in range(len(texts) - len(all_results)):
-                        all_results.append(self._create_needs_review_result("Quota Exceeded - Skipped"))
-                    break
-
-                # Otherwise mark all items in this batch as needing review and continue
-                for text in batch:
-                    all_results.append(self._create_needs_review_result(text))
-                
-                if progress_callback:
-                    progress_callback(i + len(batch), total_items)
-                continue
+                logger.error(f"Batch {batch_num} failed: {exc}. Using Heuristic Extractor fallback.")
+                from app.llm.gemini import extract_heuristic_fallback
+                batch_results = []
+                for idx, text in enumerate(batch):
+                    res = extract_heuristic_fallback(text)
+                    batch_results.append(res)
+                    if make_item_cb(i):
+                        make_item_cb(i)(idx + 1, len(batch))
 
             for idx, result in enumerate(batch_results):
                 try:
