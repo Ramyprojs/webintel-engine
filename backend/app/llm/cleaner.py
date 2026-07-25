@@ -25,7 +25,7 @@ class DataCleaner:
 
         Args:
             texts: List of raw text strings to clean/structure.
-            progress_callback: Optional callable(batch_num, total_batches) to report progress.
+            progress_callback: Optional callable(items_done, total_items) to report progress.
 
         Returns:
             List of validated LLMExtractedData results. Results that fail
@@ -35,14 +35,23 @@ class DataCleaner:
         logger.info(f"Cleaning {len(texts)} texts in batches of {self.batch_size}")
         all_results: List[LLMExtractedData] = []
         total_batches = (len(texts) + self.batch_size - 1) // self.batch_size
+        total_items = len(texts)
 
         for i in range(0, len(texts), self.batch_size):
             batch = texts[i : i + self.batch_size]
             batch_num = (i // self.batch_size) + 1
             logger.info(f"Processing batch {batch_num}/{total_batches}")
 
+            # Per-item callback that fires after every single page is cleaned
+            def make_item_cb(batch_start):
+                def item_cb(items_in_batch, batch_total):
+                    items_done = batch_start + items_in_batch
+                    if progress_callback:
+                        progress_callback(items_done, total_items)
+                return item_cb
+
             try:
-                batch_results = self.provider.extract_batch(batch)
+                batch_results = self.provider.extract_batch(batch, item_callback=make_item_cb(i))
             except Exception as exc:
                 logger.error(f"Batch {batch_num} failed: {exc}")
                 
@@ -59,7 +68,7 @@ class DataCleaner:
                     all_results.append(self._create_needs_review_result(text))
                 
                 if progress_callback:
-                    progress_callback(batch_num, total_batches)
+                    progress_callback(i + len(batch), total_items)
                 continue
 
             for idx, result in enumerate(batch_results):
@@ -76,9 +85,6 @@ class DataCleaner:
                     # Retry once
                     retry_result = self._retry_single(batch[idx])
                     all_results.append(retry_result)
-
-            if progress_callback:
-                progress_callback(batch_num, total_batches)
 
         logger.info(f"Cleaning complete: {len(all_results)} results produced")
         return all_results

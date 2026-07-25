@@ -11,6 +11,6 @@ class LLMProvider(Protocol):
         """Extract structured data from raw text."""
         ...
         
-    def extract_batch(self, texts: List[str]) -> List[LLMExtractedData]:
+    def extract_batch(self, texts: List[str], item_callback=None) -> List[LLMExtractedData]:
         """Extract structured data from a batch of texts."""
         ...

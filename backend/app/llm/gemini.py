@@ -112,13 +112,15 @@ class GeminiProvider(LLMProvider):
             error_diagnostic=last_error
         )
 
-    def extract_batch(self, texts: List[str]) -> List[LLMExtractedData]:
+    def extract_batch(self, texts: List[str], item_callback=None) -> List[LLMExtractedData]:
         """Extract structured data from a batch of texts."""
         import time
         results = []
         for idx, text in enumerate(texts):
             try:
                 results.append(self.extract_structured_data(text))
+                if item_callback:
+                    item_callback(idx + 1, len(texts))
                 # Free tier limit is 5 RPM (1 request every 13 seconds).
                 # We sleep 13s between items to stay safely under the limit.
                 if idx < len(texts) - 1:

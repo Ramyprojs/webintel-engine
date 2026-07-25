@@ -68,13 +68,14 @@ def run_cleaning_stage(session, job, gemini_api_key=None):
 
     # Process all texts with live progress updates
     texts = [page.extracted_text for page in pages]
+    total_items = len(texts)
     
-    def on_progress(batch_num, total_batches):
-        progress = 50 + int((batch_num / total_batches) * 40)
+    def on_progress(items_done, total):
+        progress = 50 + int((items_done / total) * 40)
         update_job_progress(
             session, job,
             progress=progress,
-            stage_detail=f"Cleaning batch {batch_num}/{total_batches}..."
+            stage_detail=f"Cleaned {items_done}/{total} pages..."
         )
 
     results = cleaner.clean_texts(texts, progress_callback=on_progress)
