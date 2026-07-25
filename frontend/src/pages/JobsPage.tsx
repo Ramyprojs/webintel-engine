@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Play, Search, Globe, AlertCircle, RefreshCw, FileText } from 'lucide-react';
+import { Play, Search, Globe, AlertCircle, RefreshCw } from 'lucide-react';
 import { jobsApi, configApi } from '../api/client';
 import type { Job, InputType } from '../api/client';
 import { cn } from '../App';
@@ -67,223 +67,224 @@ export default function JobsPage() {
   };
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 relative z-10">
+    <div className="max-w-6xl mx-auto space-y-6 wi-enter">
       
-      {/* Header */}
-      <div className="flex justify-between items-end border-b border-white/[0.06] pb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[11px] font-mono text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
-              Command Dispatcher
-            </span>
-          </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-white">Active Jobs</h1>
-          <p className="text-slate-400 text-sm mt-1">Submit and monitor autonomous background extraction tasks.</p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <div className="text-xs text-slate-400 font-mono">TOTAL TASKS</div>
-            <div className="text-lg font-bold font-mono text-white">{jobs.length}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Mercury Command Input Palette */}
-      <div className="glass-panel p-6 overflow-hidden relative group border-white/[0.1] hover:border-indigo-500/40">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-indigo-600/10 to-purple-600/10 rounded-full blur-3xl -z-10 pointer-events-none group-hover:scale-110 transition-transform duration-700" />
-        
+      {/* Dispatch Command Card */}
+      <section className="border border-[var(--border)] bg-[var(--card)] relative overflow-hidden rounded-sm shadow-sm">
         {!hasKey && (
-          <div className="absolute inset-0 z-20 bg-[#07080b]/80 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 animate-in fade-in duration-300">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-3 text-amber-400">
-              <AlertCircle className="w-6 h-6" />
+          <div className="absolute inset-0 z-20 bg-[var(--background)]/90 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6">
+            <div className="size-10 rounded-sm bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-3 text-amber-600">
+              <AlertCircle className="size-5" />
             </div>
-            <h3 className="text-lg font-semibold text-white">API Key Required</h3>
-            <p className="text-sm text-slate-400 max-w-sm mt-1 mb-5">
+            <h3 className="font-serif text-lg font-medium text-[var(--foreground)]">API Key Required</h3>
+            <p className="text-xs text-[var(--muted-foreground)] max-w-sm mt-1 mb-4 font-mono">
               You must configure a valid Gemini API key before dispatching any background scraping jobs.
             </p>
-            <a href="/settings" className="glow-button text-sm flex items-center gap-2">
+            <a href="/settings" className="border border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-mono uppercase tracking-[0.12em] px-4 py-2 hover:bg-[var(--primary)]/90 transition-colors">
               Configure Settings &rarr;
             </a>
           </div>
         )}
 
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold text-white flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-              <Play className="w-3.5 h-3.5 fill-current" />
-            </div>
-            Dispatch Command
-          </h2>
+        {/* Header row */}
+        <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3 md:px-5">
+          <div className="flex items-baseline gap-3">
+            <span className="text-[10px] uppercase tracking-[0.22em] text-[var(--muted-foreground)] font-mono">
+              Extraction Setup
+            </span>
+            <h2 className="font-serif text-lg font-medium tracking-tight text-[var(--foreground)]">
+              Start Web Extraction
+            </h2>
+          </div>
 
-          {/* Mode Selector Toggle Pills */}
-          <div className="flex bg-white/[0.04] p-1 rounded-xl border border-white/[0.08]">
+          {/* Mode Toggle Pills */}
+          <div className="flex items-center font-mono">
             <button
               type="button"
               onClick={() => setInputType('domain')}
               className={cn(
-                "flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer select-none active:scale-95 active:translate-y-0.5",
+                "flex items-center gap-1.5 border-b-2 px-3 py-1.5 text-xs transition-colors cursor-pointer",
                 inputType === 'domain'
-                  ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)] tab-active-glow"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
+                  ? "border-[var(--primary)] font-medium text-[var(--foreground)]"
+                  : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               )}
             >
-              <Globe className={cn("w-3.5 h-3.5 transition-transform duration-200", inputType === 'domain' && "scale-110 text-indigo-200")} /> Domain Crawl
+              <Globe className="size-3.5" strokeWidth={1.75} />
+              <span className="hidden sm:inline">Domain Crawl</span>
             </button>
             <button
               type="button"
               onClick={() => setInputType('keyword')}
               className={cn(
-                "flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer select-none active:scale-95 active:translate-y-0.5",
+                "flex items-center gap-1.5 border-b-2 px-3 py-1.5 text-xs transition-colors cursor-pointer",
                 inputType === 'keyword'
-                  ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)] tab-active-glow"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
+                  ? "border-[var(--primary)] font-medium text-[var(--foreground)]"
+                  : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               )}
             >
-              <Search className={cn("w-3.5 h-3.5 transition-transform duration-200", inputType === 'keyword' && "scale-110 text-purple-200")} /> Keyword Search
+              <Search className="size-3.5" strokeWidth={1.75} />
+              <span className="hidden sm:inline">Keyword Search</span>
             </button>
           </div>
         </div>
-        
-        <form onSubmit={handleSubmit} className="flex gap-3 items-center">
-          <div className="flex-1 relative">
-            <div className="absolute left-4 top-3.5 text-slate-500 pointer-events-none">
-              {inputType === 'domain' ? <Globe className="w-4 h-4 text-indigo-400" /> : <Search className="w-4 h-4 text-purple-400" />}
-            </div>
-            <input 
-              type="text" 
+
+        {/* Input Form Row */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-stretch md:p-5">
+          <label className="group flex flex-1 items-center border border-[var(--input)] bg-[var(--background)] transition-colors focus-within:border-[var(--primary)] rounded-sm">
+            <span className="grid h-full place-items-center border-r border-[var(--input)] px-3 text-[var(--muted-foreground)]">
+              {inputType === 'domain' ? <Globe className="size-4" strokeWidth={1.75} /> : <Search className="size-4" strokeWidth={1.75} />}
+            </span>
+            <span className="pl-3 pr-1 text-xs font-mono text-[var(--muted-foreground)]">
+              {inputType === 'domain' ? 'https://' : 'Search:'}
+            </span>
+            <input
+              type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder={inputType === 'domain' ? "Enter target domain (e.g. books.toscrape.com)" : "Enter search topic (e.g. AI startups in san francisco)"}
-              className="glass-input w-full pl-11 pr-24 py-3 text-sm font-sans"
+              placeholder={inputType === 'domain' ? "books.toscrape.com" : "fintech startups in europe"}
               disabled={isSubmitting}
+              className="h-11 w-full bg-transparent pr-3 text-sm font-mono text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/60 focus:outline-none"
             />
-            <div className="absolute right-3 top-3 flex items-center gap-1.5 pointer-events-none">
-              <span className="command-pill">↵ ENTER</span>
-            </div>
-          </div>
-          
-          <button 
-            type="submit" 
+            <kbd className="mr-3 hidden items-center gap-1 border border-[var(--border)] bg-[var(--muted)] px-1.5 py-1 text-[10px] text-[var(--muted-foreground)] font-mono sm:flex">
+              Enter ↵
+            </kbd>
+          </label>
+
+          <button
+            type="submit"
             disabled={isSubmitting || !inputValue.trim()}
-            className="glow-button flex items-center gap-2 py-3 px-6 text-sm shrink-0"
+            className="group flex h-11 shrink-0 items-center justify-center gap-2 border border-[var(--primary)] bg-[var(--primary)] px-6 text-xs font-mono font-medium uppercase tracking-[0.12em] text-[var(--primary-foreground)] transition-all duration-200 hover:bg-[var(--primary)]/90 active:translate-y-px disabled:cursor-not-allowed disabled:border-[var(--border)] disabled:bg-[var(--muted)] disabled:text-[var(--muted-foreground)] cursor-pointer rounded-sm"
           >
-            {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-current" />}
-            <span>Execute</span>
+            {isSubmitting ? <RefreshCw className="size-3.5 animate-spin" /> : <Play className="size-3.5 fill-current" />}
+            Start Extraction
           </button>
         </form>
 
         {error && (
-          <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl flex items-center gap-2.5 text-sm animate-in slide-in-from-top-2">
-            <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+          <div className="mx-4 mb-4 p-3 bg-rose-500/10 border border-rose-500/20 text-rose-700 text-xs font-mono flex items-center gap-2 rounded-sm">
+            <AlertCircle className="size-4 shrink-0 text-rose-600" /> {error}
           </div>
         )}
-      </div>
+      </section>
 
-      {/* Active Jobs Grid */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-white flex items-center gap-2">
-            <span>Recent Activity</span>
-            {jobs.length > 0 && (
-              <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-white/[0.06] text-slate-400 border border-white/[0.08]">
-                {jobs.length}
-              </span>
-            )}
-          </h2>
-          {loading && <RefreshCw className="w-4 h-4 text-indigo-400 animate-spin" />}
+      {/* Ledger Activity Table */}
+      <section className="border border-[var(--border)] bg-[var(--card)] rounded-sm shadow-sm">
+        {/* Caption */}
+        <div className="flex items-baseline justify-between border-b border-[var(--border)] px-4 py-3 md:px-5">
+          <div className="flex items-baseline gap-3">
+            <span className="text-[10px] uppercase tracking-[0.22em] text-[var(--muted-foreground)] font-mono">
+              Ledger
+            </span>
+            <h2 className="font-serif text-lg font-medium tracking-tight text-[var(--foreground)]">
+              Recent activity
+            </h2>
+          </div>
+          <span className="text-[11px] font-mono tabular-nums text-[var(--muted-foreground)]">
+            {jobs.length} {jobs.length === 1 ? 'entry' : 'entries'}
+          </span>
         </div>
-        
+
         {jobs.length === 0 && !loading ? (
-          <div className="glass-panel p-16 text-center text-slate-500 flex flex-col items-center border-dashed border-white/10">
-            <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mb-3">
-              <FileText className="w-6 h-6 opacity-40 text-slate-400" />
-            </div>
-            <p className="text-slate-300 font-medium">No active commands found</p>
-            <p className="text-xs text-slate-500 mt-1 max-w-sm">Dispatch a new background scraping task using the command bar above.</p>
+          <div className="px-5 py-16 text-center">
+            <p className="font-serif text-lg italic text-[var(--muted-foreground)]">
+              The ledger is empty.
+            </p>
+            <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-[var(--muted-foreground)] font-mono">
+              Dispatch a worker above and its progress will be recorded here as it comes online.
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {jobs.map((job) => (
-              <JobCard key={job.id} job={job} />
-            ))}
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left font-mono">
+              <thead>
+                <tr className="border-b border-[var(--border)] text-[10px] uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+                  <th className="px-4 py-2.5 font-medium md:px-5">Source</th>
+                  <th className="hidden px-4 py-2.5 font-medium sm:table-cell">Type</th>
+                  <th className="px-4 py-2.5 font-medium">Status</th>
+                  <th className="px-4 py-2.5 font-medium">Progress</th>
+                  <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell md:px-5">Dispatched</th>
+                </tr>
+              </thead>
+              <tbody>
+                {jobs.map((job) => {
+                  const isRunning = job.status === 'scraping' || job.status === 'cleaning' || job.status === 'queued';
+                  
+                  return (
+                    <tr
+                      key={job.id}
+                      className="group border-b border-[var(--border)]/60 align-middle transition-colors last:border-b-0 hover:bg-[var(--accent)]/50"
+                    >
+                      {/* Source */}
+                      <td className="px-4 py-3 md:px-5">
+                        <div className="flex items-center gap-2.5">
+                          <span className="grid size-7 shrink-0 place-items-center border border-[var(--border)] bg-[var(--background)] text-[var(--muted-foreground)] transition-colors duration-200 group-hover:border-[var(--primary)] group-hover:text-[var(--primary)] rounded-sm">
+                            {job.input_type === 'domain' ? (
+                              <Globe className="size-3.5" strokeWidth={1.75} />
+                            ) : (
+                              <Search className="size-3.5" strokeWidth={1.75} />
+                            )}
+                          </span>
+                          <div className="min-w-0 leading-tight">
+                            <p className="truncate text-sm font-medium text-[var(--foreground)]" title={job.input_value}>{job.input_value}</p>
+                            <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
+                              {job.id.slice(0, 8)}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Type */}
+                      <td className="hidden px-4 py-3 text-xs text-[var(--muted-foreground)] sm:table-cell">
+                        {job.input_type === 'domain' ? 'Domain Crawl' : 'Keyword Search'}
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-4 py-3">
+                        <span className={cn(
+                          "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
+                          job.status === 'done' && "border-[var(--ok)]/30 bg-[var(--ok)]/10 text-[var(--ok)]",
+                          isRunning && "border-[var(--work)]/40 bg-[var(--work)]/10 text-[color:var(--work-foreground)]",
+                          job.status === 'failed' && "border-destructive/30 bg-destructive/10 text-destructive"
+                        )}>
+                          <span className={cn(
+                            "size-1.5 rounded-full",
+                            job.status === 'done' ? "bg-[var(--ok)]" : isRunning ? "bg-[var(--work)] animate-pulse" : "bg-muted-foreground"
+                          )} />
+                          <span className="capitalize">{job.status}</span>
+                        </span>
+                      </td>
+
+                      {/* Progress */}
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="h-1.5 w-16 overflow-hidden bg-[var(--muted)] md:w-28 rounded-sm">
+                            <div
+                              className={cn(
+                                "h-full transition-[width] duration-500 ease-out",
+                                job.status === 'done' ? "bg-[var(--ok)]" : "bg-[var(--work)]",
+                                isRunning && "wi-bar-active"
+                              )}
+                              style={{ width: `${job.progress_percent}%` }}
+                            />
+                          </div>
+                          <span className="w-9 text-right text-[11px] tabular-nums text-[var(--muted-foreground)] font-mono font-medium">
+                            {job.progress_percent}%
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Dispatched */}
+                      <td className="hidden px-4 py-3 text-right text-xs tabular-nums text-[var(--muted-foreground)] md:table-cell md:px-5">
+                        {new Date(job.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-function JobCard({ job }: { job: Job }) {
-  const isRunning = job.status === 'scraping' || job.status === 'cleaning' || job.status === 'queued';
-  
-  const statusColors = {
-    queued: 'text-slate-400 bg-slate-400/10 border-slate-400/20',
-    scraping: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/30',
-    cleaning: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
-    done: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
-    failed: 'text-rose-400 bg-rose-500/10 border-rose-500/30',
-    partial: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
-  };
-
-  return (
-    <div className="glass-panel p-5 relative overflow-hidden group hover:-translate-y-0.5 transition-all duration-300">
-      {/* Animated Glowing Header line for running jobs */}
-      {isRunning && (
-        <div 
-          className="absolute left-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-sky-400 transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(99,102,241,0.6)]"
-          style={{ width: `${job.progress_percent}%` }}
-        />
-      )}
-      
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-indigo-400 shrink-0">
-            {job.input_type === 'domain' ? <Globe className="w-4 h-4" /> : <Search className="w-4 h-4" />}
-          </div>
-          <div className="min-w-0">
-            <h4 className="font-semibold text-slate-100 text-sm truncate max-w-[200px]" title={job.input_value}>
-              {job.input_value}
-            </h4>
-            <span className="text-[11px] font-mono text-slate-500 uppercase tracking-wider block mt-0.5">
-              {job.input_type} command
-            </span>
-          </div>
-        </div>
-        <span className={cn(
-          "text-[10px] px-2.5 py-1 rounded-full border uppercase tracking-wider font-semibold font-mono flex items-center gap-1.5 shrink-0",
-          statusColors[job.status] || statusColors.queued
-        )}>
-          {isRunning && <RefreshCw className="w-3 h-3 animate-spin text-indigo-400" />}
-          {job.status}
-        </span>
-      </div>
-      
-      <div className="space-y-2.5 pt-2 border-t border-white/[0.04]">
-        <div className="flex justify-between text-xs">
-          <span className="text-slate-500 font-medium">Stage</span>
-          <span className="text-slate-300 font-mono truncate max-w-[210px]">{job.stage_detail || 'Waiting in queue...'}</span>
-        </div>
-        
-        <div>
-          <div className="flex justify-between text-xs mb-1.5">
-            <span className="text-slate-500 font-medium">Execution Progress</span>
-            <span className="text-indigo-300 font-mono font-semibold">{job.progress_percent}%</span>
-          </div>
-          <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden p-[1px] border border-white/[0.05]">
-            <div 
-              className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-sky-400 transition-all duration-700"
-              style={{ width: `${job.progress_percent}%` }}
-            />
-          </div>
-        </div>
-        
-        {job.error_message && (
-          <div className="mt-3 p-2.5 bg-rose-500/10 text-rose-300 text-xs rounded-xl border border-rose-500/20 font-mono truncate" title={job.error_message}>
-            {job.error_message}
-          </div>
-        )}
-      </div>
+      </section>
     </div>
   );
 }

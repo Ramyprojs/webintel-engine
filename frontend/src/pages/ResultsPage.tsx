@@ -97,38 +97,42 @@ export default function ResultsPage() {
   };
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500 relative z-10 flex flex-col h-[calc(100vh-4rem)]">
+    <div className="max-w-[1600px] mx-auto space-y-6 wi-enter flex flex-col h-[calc(100vh-6rem)]">
       
       {/* Header */}
-      <div className="flex justify-between items-end shrink-0 border-b border-white/[0.06] pb-6">
+      <div className="flex justify-between items-end shrink-0 border-b border-[var(--border)] pb-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[11px] font-mono text-purple-400 uppercase tracking-widest bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
+          <div className="flex items-center gap-2 mb-1 font-mono">
+            <span className="text-[10px] uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
               Intelligence Warehouse
             </span>
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-white flex items-center gap-3">
+          <h1 className="font-serif text-2xl font-medium tracking-tight text-[var(--foreground)] flex items-center gap-3">
             Results Database
           </h1>
-          <p className="text-slate-400 text-sm mt-1">Select a search job to view and export its structured extracted intelligence.</p>
+          <p className="text-[var(--muted-foreground)] text-xs font-mono mt-1">
+            Select a search job to view and export its extracted intelligence.
+          </p>
         </div>
         
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3 font-mono">
           <button 
             onClick={handleManualRefresh} 
             disabled={!selectedJobId || loading}
-            className="glass-button flex items-center gap-2 border-white/10 disabled:opacity-40"
+            className="border border-[var(--border)] bg-[var(--card)] px-3 py-1.5 text-xs text-[var(--muted-foreground)] hover:border-[var(--foreground)] hover:text-[var(--foreground)] transition-colors rounded-sm disabled:opacity-40"
             title="Refresh database results"
           >
-            <RefreshCw className={cn("w-4 h-4 text-indigo-400", loading && "animate-spin")} />
+            <RefreshCw className={cn("size-3.5 text-[var(--primary)]", loading && "animate-spin")} />
           </button>
+          
+          {/* Primary Action: Export CSV for currently selected/filtered view */}
           <button 
             onClick={() => handleExport()} 
             disabled={!selectedJobId || results.length === 0}
-            className="glow-button flex items-center gap-2 text-sm !from-emerald-600 !to-teal-600 hover:!from-emerald-500 hover:!to-teal-500 disabled:opacity-40"
+            className="border border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)] text-xs uppercase tracking-[0.12em] px-4 py-2 hover:bg-[var(--primary)]/90 transition-colors flex items-center gap-2 rounded-sm disabled:opacity-40 disabled:border-[var(--border)] disabled:bg-[var(--muted)] disabled:text-[var(--muted-foreground)]"
             title="Export CSV for selected search"
           >
-            <Download className="w-4 h-4" />
+            <Download className="size-3.5" />
             {selectedJobId ? 'Export Site CSV' : 'Export CSV'}
           </button>
         </div>
@@ -137,19 +141,20 @@ export default function ResultsPage() {
       <div className="flex gap-6 flex-1 min-h-0">
         
         {/* Left Sidebar: Jobs List */}
-        <div className="w-1/3 max-w-sm glass-panel flex flex-col overflow-hidden shrink-0 border-white/[0.08]">
-          <div className="p-4 border-b border-white/[0.06] bg-white/[0.02] text-xs font-mono uppercase tracking-wider text-slate-400 flex justify-between items-center font-medium">
+        <div className="w-1/3 max-w-sm border border-[var(--border)] bg-[var(--card)] flex flex-col overflow-hidden shrink-0 rounded-sm shadow-sm">
+          <div className="p-3 border-b border-[var(--border)] bg-[var(--muted)]/50 text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--muted-foreground)] flex justify-between items-center font-medium">
             <span>Your Searches</span>
-            <span className="bg-white/[0.06] text-slate-300 py-0.5 px-2 rounded-full text-[10px] font-mono border border-white/[0.08]">{jobs.length}</span>
+            <span className="bg-[var(--background)] text-[var(--foreground)] py-0.5 px-2 text-[10px] font-mono border border-[var(--border)] rounded-sm">{jobs.length}</span>
           </div>
-          <div className="flex-1 overflow-y-auto p-2 space-y-1">
+          
+          <div className="flex-1 overflow-y-auto p-2 space-y-1 font-mono">
             {loadingJobs ? (
-              <div className="p-8 text-center text-slate-500 font-mono text-xs">
-                <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-indigo-400" />
+              <div className="p-8 text-center text-[var(--muted-foreground)] text-xs">
+                <RefreshCw className="size-4 animate-spin mx-auto mb-2 text-[var(--primary)]" />
                 Loading searches...
               </div>
             ) : jobs.length === 0 ? (
-              <div className="p-8 text-center text-slate-500 text-xs font-mono">
+              <div className="p-8 text-center text-[var(--muted-foreground)] text-xs">
                 No searches found.<br/>Go to the Dashboard to dispatch a job.
               </div>
             ) : (
@@ -159,41 +164,43 @@ export default function ResultsPage() {
                   role="button"
                   onClick={() => setSelectedJobId(job.id)}
                   className={cn(
-                    "w-full text-left p-3.5 rounded-xl flex items-center justify-between gap-3 transition-all duration-200 group cursor-pointer border active:scale-[0.97] active:translate-y-0.5 select-none relative overflow-hidden",
+                    "w-full text-left p-3 rounded-sm flex items-center justify-between gap-3 transition-colors duration-150 group cursor-pointer border",
                     selectedJobId === job.id 
-                      ? "bg-gradient-to-r from-indigo-500/20 via-purple-500/10 to-transparent border-indigo-500/40 shadow-[0_4px_25px_rgba(99,102,241,0.2)] tab-active-glow" 
-                      : "hover:bg-white/[0.03] border-transparent"
+                      ? "border-[var(--primary)] bg-[var(--sidebar-accent)] text-[var(--foreground)] font-medium" 
+                      : "border-transparent text-[var(--muted-foreground)] hover:border-[var(--border)] hover:text-[var(--foreground)]"
                   )}
                 >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className={cn(
-                      "p-2 rounded-lg shrink-0 border transition-colors",
-                      selectedJobId === job.id ? "bg-indigo-500/20 border-indigo-500/30 text-indigo-300" : "bg-white/[0.04] border-white/[0.06] text-slate-400 group-hover:text-slate-200"
+                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                    <span className={cn(
+                      "grid size-7 shrink-0 place-items-center border border-[var(--border)] bg-[var(--background)] text-[var(--muted-foreground)] rounded-sm",
+                      selectedJobId === job.id && "border-[var(--primary)] text-[var(--primary)]"
                     )}>
-                      {job.input_type === 'domain' ? <Globe className="w-4 h-4" /> : <Search className="w-4 h-4" />}
-                    </div>
+                      {job.input_type === 'domain' ? <Globe className="size-3.5" strokeWidth={1.75} /> : <Search className="size-3.5" strokeWidth={1.75} />}
+                    </span>
                     <div className="flex-1 min-w-0">
                       <p className={cn(
-                        "font-medium text-sm truncate",
-                        selectedJobId === job.id ? "text-white" : "text-slate-300 group-hover:text-white"
+                        "text-xs truncate font-medium",
+                        selectedJobId === job.id ? "text-[var(--foreground)]" : "text-[var(--foreground)]/80"
                       )} title={job.input_value}>
                         {job.input_value}
                       </p>
-                      <p className="text-[10px] font-mono text-slate-500 mt-1 uppercase tracking-wider flex justify-between">
+                      <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5 uppercase tracking-wider flex justify-between">
                         <span>{new Date(job.created_at).toLocaleDateString()}</span>
                         <span className={cn(
-                          job.status === 'done' ? "text-emerald-400" :
-                          job.status === 'failed' ? "text-rose-400" : "text-indigo-400"
+                          job.status === 'done' ? "text-[var(--ok)]" :
+                          job.status === 'failed' ? "text-destructive" : "text-[var(--work)]"
                         )}>{job.status}</span>
                       </p>
                     </div>
                   </div>
+                  
+                  {/* Additive Per-Site Independent Export Button */}
                   <button
                     onClick={(e) => handleExport(job.id, job.input_value, e)}
                     title={`Export CSV for ${job.input_value} independently`}
-                    className="p-2 rounded-lg bg-white/[0.04] hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-300 border border-white/[0.08] hover:border-emerald-500/40 transition-all shrink-0 ml-1 opacity-80 hover:opacity-100"
+                    className="p-1.5 rounded-sm bg-[var(--background)] hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)] text-[var(--muted-foreground)] border border-[var(--border)] transition-colors shrink-0 ml-1"
                   >
-                    <Download className="w-3.5 h-3.5" />
+                    <Download className="size-3.5" />
                   </button>
                 </div>
               ))
@@ -202,17 +209,16 @@ export default function ResultsPage() {
         </div>
 
         {/* Right Area: Results Data Table */}
-        <div className="flex-1 glass-panel overflow-hidden shadow-2xl flex flex-col">
-          <div className="p-4 border-b border-slate-800/50 flex gap-4 items-center bg-slate-900/30 relative overflow-hidden shrink-0">
-            <div className="absolute top-0 right-1/4 w-64 h-64 bg-brand-secondary/10 rounded-full blur-3xl -z-10 pointer-events-none" />
-            <Filter className="w-4 h-4 text-slate-400" />
+        <div className="flex-1 border border-[var(--border)] bg-[var(--card)] overflow-hidden shadow-sm flex flex-col rounded-sm">
+          <div className="p-3 border-b border-[var(--border)] flex gap-3 items-center bg-[var(--muted)]/40 shrink-0 font-mono">
+            <Filter className="size-4 text-[var(--muted-foreground)]" />
             <input 
               type="text" 
               placeholder="Filter by company name or industry..." 
-              className="glass-input flex-1 !py-1.5 bg-slate-950/30"
+              className="flex-1 h-9 px-3 border border-[var(--input)] bg-[var(--background)] text-xs text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/60 focus:outline-none focus:border-[var(--primary)] rounded-sm"
               disabled
             />
-            <select className="glass-input !py-1.5 w-48 bg-slate-950/30" disabled>
+            <select className="h-9 px-3 border border-[var(--input)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] rounded-sm" disabled>
               <option>All Statuses</option>
               <option>Cleaned</option>
               <option>Needs Review</option>
@@ -220,41 +226,41 @@ export default function ResultsPage() {
           </div>
 
           <div className="flex-1 overflow-auto">
-            <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-slate-900/80 text-slate-400 font-medium uppercase tracking-wider text-xs border-b border-slate-800 sticky top-0 z-10 backdrop-blur-md">
+            <table className="w-full text-left text-xs whitespace-nowrap font-mono border-collapse">
+              <thead className="bg-[var(--background)] text-[var(--muted-foreground)] font-medium uppercase tracking-[0.18em] text-[10px] border-b border-[var(--border)] sticky top-0 z-10">
                 <tr>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Company</th>
-                  <th className="px-6 py-4">Industry</th>
-                  <th className="px-6 py-4">Contact</th>
-                  <th className="px-6 py-4 text-right">Confidence</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium">Company</th>
+                  <th className="px-5 py-3 font-medium">Industry</th>
+                  <th className="px-5 py-3 font-medium">Contact</th>
+                  <th className="px-5 py-3 text-right font-medium">Confidence</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/30">
+              <tbody className="divide-y divide-[var(--border)]/60">
                 {!selectedJobId ? (
                    <tr>
-                     <td colSpan={5} className="px-6 py-24 text-center text-slate-400">
-                       <Database className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                       <p className="font-medium text-lg text-slate-300">Select a Search</p>
-                       <p className="text-sm mt-2 max-w-sm mx-auto text-slate-500">
-                         Click on a job from the left sidebar to view its extracted results here.
+                     <td colSpan={5} className="px-6 py-24 text-center">
+                       <Database className="size-10 mx-auto mb-3 opacity-30 text-[var(--muted-foreground)]" />
+                       <p className="font-serif text-lg font-medium text-[var(--foreground)]">Select a Search</p>
+                       <p className="text-xs mt-1 max-w-sm mx-auto text-[var(--muted-foreground)] font-mono">
+                         Click on a job from the left ledger to view its extracted records here.
                        </p>
                      </td>
                    </tr>
                 ) : loading && results.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-24 text-center text-slate-500">
-                      <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-3 opacity-50" />
-                      <span className="animate-pulse">Loading intelligence...</span>
+                    <td colSpan={5} className="px-6 py-24 text-center text-[var(--muted-foreground)] font-mono text-xs">
+                      <RefreshCw className="size-5 animate-spin mx-auto mb-2 text-[var(--primary)]" />
+                      Loading extracted records...
                     </td>
                   </tr>
                 ) : results.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-24 text-center text-slate-400">
-                      <Database className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                      <p className="font-medium text-lg text-slate-300">No Data Extracted</p>
-                      <p className="text-sm mt-2 max-w-sm mx-auto text-slate-500">
-                        If the job completed successfully, the scraper likely found 0 valid pages (e.g. rate-limited by DuckDuckGo).
+                    <td colSpan={5} className="px-6 py-24 text-center">
+                      <Database className="size-10 mx-auto mb-3 opacity-30 text-[var(--muted-foreground)]" />
+                      <p className="font-serif text-lg font-medium text-[var(--foreground)]">No Data Extracted</p>
+                      <p className="text-xs mt-1 max-w-sm mx-auto text-[var(--muted-foreground)] font-mono">
+                        No valid structured records were found for this search item.
                       </p>
                     </td>
                   </tr>
@@ -285,142 +291,95 @@ function ResultRow({ result, isExpanded, onToggle }: { result: StructuredResult,
       <tr 
         onClick={onToggle}
         className={cn(
-          "hover:bg-slate-800/30 cursor-pointer transition-colors",
-          isExpanded && "bg-slate-800/20"
+          "hover:bg-[var(--accent)]/50 cursor-pointer transition-colors font-mono border-b border-[var(--border)]/60 align-middle",
+          isExpanded && "bg-[var(--sidebar-accent)]"
         )}
       >
-        <td className="px-6 py-4">
+        <td className="px-5 py-3">
           {isWarning ? (
-            <span className="flex items-center gap-1.5 text-amber-400 bg-amber-400/10 px-2 py-1 rounded w-max text-xs uppercase font-semibold">
-              <AlertTriangle className="w-3 h-3" /> Review
+            <span className="inline-flex items-center gap-1.5 border border-amber-500/30 bg-amber-500/10 text-amber-700 px-2 py-0.5 rounded-full text-[11px] font-medium">
+              <AlertTriangle className="size-3" /> Review
             </span>
           ) : (
-            <span className="flex items-center gap-1.5 text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded w-max text-xs uppercase font-semibold">
-              <CheckCircle className="w-3 h-3" /> Cleaned
+            <span className="inline-flex items-center gap-1.5 border border-[var(--ok)]/30 bg-[var(--ok)]/10 text-[var(--ok)] px-2 py-0.5 rounded-full text-[11px] font-medium">
+              <CheckCircle className="size-3" /> Cleaned
             </span>
           )}
         </td>
-        <td className="px-6 py-4">
-          <div className="font-medium text-slate-200">
-            {result.company_name || <span className="text-slate-600">Unknown</span>}
-          </div>
-          {result.source_url && (
-            <a
-              href={result.source_url}
-              target="_blank"
-              rel="noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              title={`Source Page: ${result.source_url}`}
-              className="text-[11px] text-slate-500 hover:text-brand-secondary flex items-center gap-1 mt-0.5 truncate max-w-[240px]"
-            >
-              <Globe className="w-2.5 h-2.5 shrink-0" /> {result.source_url.replace(/^https?:\/\//, '')}
-            </a>
-          )}
+        
+        <td className="px-5 py-3 font-serif text-sm font-semibold text-[var(--foreground)]">
+          {result.company_name || 'Unknown Entity'}
         </td>
-        <td className="px-6 py-4 text-slate-400">
-          {result.industry || '-'}
+        
+        <td className="px-5 py-3 text-xs text-[var(--muted-foreground)] font-mono">
+          {result.industry || '—'}
         </td>
-        <td className="px-6 py-4">
-          <div className="flex flex-col text-slate-400 gap-0.5">
-            {result.contact_email ? <span>{result.contact_email}</span> : null}
-            {result.website ? (
-              <a 
-                href={result.website.startsWith('http') ? result.website : `https://${result.website}`}
-                target="_blank" 
-                rel="noreferrer"
-                className="text-brand-primary hover:underline flex items-center gap-1"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {result.website} <ExternalLink className="w-3 h-3" />
-              </a>
-            ) : null}
-            {!result.contact_email && !result.website && '-'}
-          </div>
+        
+        <td className="px-5 py-3 text-xs text-[var(--muted-foreground)] font-mono">
+          {result.contact_email || result.website || '—'}
         </td>
-        <td className="px-6 py-4 text-right">
-          {result.confidence_score ? (
-            <div className="flex items-center justify-end gap-2">
-              <div className="w-16 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                <div 
-                  className={cn(
-                    "h-full rounded-full", 
-                    result.confidence_score > 0.8 ? "bg-emerald-500" : "bg-amber-500"
-                  )}
-                  style={{ width: `${result.confidence_score * 100}%` }}
-                />
-              </div>
-              <span className="text-slate-400 font-mono">{(result.confidence_score * 100).toFixed(0)}%</span>
-            </div>
-          ) : (
-            <span className="text-slate-600">-</span>
-          )}
+        
+        <td className="px-5 py-3 text-right font-mono text-xs tabular-nums text-[var(--foreground)]">
+          {result.confidence_score ? `${Math.round(result.confidence_score * 100)}%` : '—'}
         </td>
       </tr>
       
       {/* Expanded Detail View */}
       {isExpanded && (
-        <tr>
-          <td colSpan={5} className="px-0 py-0 border-b-0">
-            <div className="bg-slate-900/50 p-6 shadow-inner border-y border-slate-800">
-              <div className="grid grid-cols-2 gap-8 whitespace-normal">
-                
-                {/* Left Column: Context */}
-                <div className="space-y-4">
-                  {result.source_url && (
-                    <div className="bg-slate-800/40 p-3 rounded-lg border border-slate-700/40 flex items-center justify-between text-xs">
-                      <span className="text-slate-400 flex items-center gap-1.5 font-medium shrink-0">
-                        <Globe className="w-3.5 h-3.5 text-brand-secondary" /> Source Page URL:
-                      </span>
-                      <a 
-                        href={result.source_url}
-                        target="_blank" 
-                        rel="noreferrer"
-                        title={result.source_url}
-                        className="text-brand-primary hover:underline font-mono truncate max-w-[320px] ml-2"
-                      >
-                        {result.source_url} <ExternalLink className="w-3 h-3 inline ml-1" />
-                      </a>
-                    </div>
-                  )}
-                  <div>
-                    <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">AI Summary</h4>
-                    <p className="text-sm text-slate-300 leading-relaxed">
-                      {result.summary || 'No summary generated.'}
-                    </p>
-                  </div>
-                  
-                  {isWarning && result.review_notes && (
-                    <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-lg">
-                      <h4 className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-                        <AlertTriangle className="w-3 h-3" /> Review Diagnostics
-                      </h4>
-                      <code className="text-xs text-red-300 font-mono break-words whitespace-pre-wrap block mt-2">
-                        {result.review_notes}
-                      </code>
-                    </div>
-                  )}
-                </div>
-
-                {/* Right Column: Key Data Points */}
+        <tr className="bg-[var(--muted)]/30 border-b border-[var(--border)]">
+          <td colSpan={5} className="p-4 font-mono text-xs">
+            <div className="p-4 border border-[var(--border)] bg-[var(--card)] rounded-sm space-y-4">
+              <div className="flex justify-between items-start border-b border-[var(--border)] pb-3">
                 <div>
-                  <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Extracted Metadata</h4>
-                  {result.key_data_points && Object.keys(result.key_data_points).length > 0 ? (
-                    <div className="grid grid-cols-2 gap-4">
-                      {Object.entries(result.key_data_points).map(([key, val]) => (
-                        <div key={key} className="bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
-                          <div className="text-xs text-slate-500 mb-1 font-mono truncate" title={key}>{key}</div>
-                          <div className="text-sm text-slate-200 font-medium truncate" title={String(val)}>
-                            {String(val)}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-slate-500 italic">No additional metadata extracted.</p>
+                  <h4 className="font-serif text-base font-medium text-[var(--foreground)]">{result.company_name}</h4>
+                  {result.website && (
+                    <a 
+                      href={result.website.startsWith('http') ? result.website : `https://${result.website}`} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="text-[11px] text-[var(--primary)] hover:underline flex items-center gap-1 mt-0.5"
+                    >
+                      {result.website} <ExternalLink className="size-3" />
+                    </a>
                   )}
                 </div>
-                
+                <div className="text-right">
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--muted-foreground)]">Confidence Score</span>
+                  <div className="font-bold text-sm text-[var(--foreground)] tabular-nums">{result.confidence_score ? `${Math.round(result.confidence_score * 100)}%` : 'N/A'}</div>
+                </div>
               </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div>
+                  <span className="text-[10px] text-[var(--muted-foreground)] block uppercase">Email</span>
+                  <span className="text-[var(--foreground)]">{result.contact_email || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-[var(--muted-foreground)] block uppercase">Phone</span>
+                  <span className="text-[var(--foreground)]">{result.contact_phone || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-[var(--muted-foreground)] block uppercase">Location</span>
+                  <span className="text-[var(--foreground)]">{result.address || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-[var(--muted-foreground)] block uppercase">Source Page URL</span>
+                  {result.source_url ? (
+                    <a href={result.source_url} target="_blank" rel="noreferrer" className="text-[var(--primary)] hover:underline flex items-center gap-1 truncate max-w-[180px]">
+                      {result.source_url.replace(/^https?:\/\//, '')} <ExternalLink className="size-3 shrink-0" />
+                    </a>
+                  ) : (
+                    <span className="text-[var(--muted-foreground)]">N/A</span>
+                  )}
+                </div>
+              </div>
+
+              {result.summary && (
+                <div className="pt-2 border-t border-[var(--border)] text-xs text-[var(--muted-foreground)] leading-relaxed">
+                  <span className="font-medium text-[var(--foreground)]">Summary: </span>
+                  {result.summary}
+                </div>
+              )}
             </div>
           </td>
         </tr>

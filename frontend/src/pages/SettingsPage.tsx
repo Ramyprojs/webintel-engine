@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Key, CheckCircle2, AlertCircle, Lock } from 'lucide-react';
+import { Key, CheckCircle2, AlertCircle, Lock, RefreshCw } from 'lucide-react';
 import { configApi } from '../api/client';
 import { cn } from '../App';
 
@@ -52,116 +52,111 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500 relative z-10">
-      <div className="border-b border-white/[0.06] pb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-[11px] font-mono text-purple-400 uppercase tracking-widest bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
-            System Configuration
-          </span>
-        </div>
-        <h1 className="text-3xl font-semibold tracking-tight text-white flex items-center gap-3">
-          Settings
-        </h1>
-        <p className="text-slate-400 text-sm mt-1">Manage system security credentials, engine parameters, and API keys.</p>
-      </div>
-
-      <div className="glass-panel p-8 relative overflow-hidden group">
-        <div className="absolute -top-24 -right-24 w-80 h-80 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-transparent rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
-        
-        <div className="flex items-center justify-between mb-6 border-b border-white/[0.06] pb-4">
-          <h2 className="text-base font-semibold text-white flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-indigo-400">
-              <Key className="w-4 h-4" />
-            </div>
-            Gemini API Security Credentials
-          </h2>
+    <div className="max-w-4xl mx-auto space-y-6 wi-enter">
+      
+      {/* Settings Security Card */}
+      <section className="border border-[var(--border)] bg-[var(--card)] rounded-sm shadow-sm">
+        {/* Caption */}
+        <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3 md:px-5">
+          <div className="flex items-baseline gap-3">
+            <span className="text-[10px] uppercase tracking-[0.22em] text-[var(--muted-foreground)] font-mono">
+              Security Console
+            </span>
+            <h2 className="font-serif text-lg font-medium tracking-tight text-[var(--foreground)]">
+              Gemini API Configuration
+            </h2>
+          </div>
           {hasKey && (
-            <span className="text-xs font-mono px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 shadow-[0_0_12px_rgba(16,185,129,0.2)]">
-              <Lock className="w-3 h-3" /> Encrypted & Active
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--ok)]/30 bg-[var(--ok)]/10 px-2.5 py-0.5 text-[11px] font-mono font-medium text-[var(--ok)]">
+              <Lock className="size-3" /> Configured / Active
             </span>
           )}
         </div>
 
-        {loadingInitial ? (
-          <div className="text-slate-500 font-mono text-sm animate-pulse flex items-center gap-2 py-4">
-            <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-            Connecting to PostgreSQL configuration vault...
-          </div>
-        ) : (
-          <div className="space-y-6 max-w-2xl relative z-10">
-            <div>
-              <label className="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-2 flex justify-between">
-                <span>Google Gemini API Key</span>
-                <span className="text-slate-500">PostgreSQL Vault</span>
-              </label>
-              
-              <div className="relative">
-                <input
-                  type="text"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  onFocus={() => {
-                    if (hasKey && apiKey === '••••••••••••••••••••••••••••••••••••••••') {
-                      setApiKey('');
-                    }
-                  }}
-                  placeholder="Paste your Gemini API key (AIzaSy...)"
-                  className={cn(
-                    "glass-input w-full font-mono text-sm tracking-wider transition-all pr-24 py-3",
-                    error && "border-rose-500/50 focus:border-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.15)]",
-                    hasKey && apiKey === '••••••••••••••••••••••••••••••••••••••••' && "text-emerald-400/80 border-emerald-500/20 bg-emerald-500/[0.02]"
-                  )}
-                />
+        <div className="p-4 md:p-6 space-y-6 font-mono">
+          {loadingInitial ? (
+            <div className="text-[var(--muted-foreground)] text-xs animate-pulse flex items-center gap-2 py-4 font-mono">
+              <RefreshCw className="size-4 animate-spin text-[var(--primary)]" />
+              Loading security configuration...
+            </div>
+          ) : (
+            <div className="space-y-6 max-w-2xl">
+              <div>
+                <label className="block text-[10px] uppercase tracking-[0.18em] text-[var(--muted-foreground)] mb-2 flex justify-between font-mono">
+                  <span>Google Gemini API Key</span>
+                  <span className="text-[var(--muted-foreground)]/70">Encrypted Storage</span>
+                </label>
                 
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={validating || !apiKey.trim() || apiKey === '••••••••••••••••••••••••••••••••••••••••'}
-                  className="absolute right-2 top-2 glow-button !py-1.5 !px-3.5 text-xs flex items-center gap-1.5"
-                >
-                  {validating ? (
-                    <>
-                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Checking...
-                    </>
-                  ) : saved ? (
-                    <>
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
-                      Saved
-                    </>
-                  ) : (
-                    'Verify & Save'
-                  )}
-                </button>
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      onFocus={() => {
+                        if (hasKey && apiKey === '••••••••••••••••••••••••••••••••••••••••') {
+                          setApiKey('');
+                        }
+                      }}
+                      placeholder="Paste your Gemini API key (e.g. AIzaSy...)"
+                      className={cn(
+                        "h-11 w-full border border-[var(--input)] bg-[var(--background)] px-3 font-mono text-xs text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/60 focus:outline-none focus:border-[var(--primary)] rounded-sm",
+                        error && "border-destructive focus:border-destructive",
+                        hasKey && apiKey === '••••••••••••••••••••••••••••••••••••••••' && "text-[var(--ok)] border-[var(--ok)]/30"
+                      )}
+                    />
+                  </div>
+                  
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={validating || !apiKey.trim() || apiKey === '••••••••••••••••••••••••••••••••••••••••'}
+                    className="flex h-11 shrink-0 items-center justify-center gap-1.5 border border-[var(--primary)] bg-[var(--primary)] px-5 text-xs font-mono font-medium uppercase tracking-[0.12em] text-[var(--primary-foreground)] transition-colors hover:bg-[var(--primary)]/90 disabled:cursor-not-allowed disabled:border-[var(--border)] disabled:bg-[var(--muted)] disabled:text-[var(--muted-foreground)] cursor-pointer rounded-sm"
+                  >
+                    {validating ? (
+                      <>
+                        <RefreshCw className="size-3.5 animate-spin" />
+                        Validating...
+                      </>
+                    ) : saved ? (
+                      <>
+                        <CheckCircle2 className="size-3.5 text-[var(--primary-foreground)]" />
+                        Saved
+                      </>
+                    ) : (
+                      'Save Key'
+                    )}
+                  </button>
+                </div>
+
+                {error && (
+                  <div className="mt-3 p-3 bg-rose-500/10 border border-rose-500/20 text-rose-700 text-xs rounded-sm flex items-center gap-2 font-mono">
+                    <AlertCircle className="size-4 shrink-0 text-rose-600" />
+                    {error}
+                  </div>
+                )}
+
+                {saved && (
+                  <div className="mt-3 p-3 bg-[var(--ok)]/10 border border-[var(--ok)]/20 text-[var(--ok)] text-xs rounded-sm flex items-center gap-2 font-mono">
+                    <CheckCircle2 className="size-4 shrink-0 text-[var(--ok)]" />
+                    Your Gemini API key has been verified and saved securely.
+                  </div>
+                )}
               </div>
 
-              {error && (
-                <div className="mt-3 p-3 bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs rounded-xl flex items-center gap-2 font-mono animate-in slide-in-from-top-2">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-                  {error}
+              {/* Clean Professional Info Banner */}
+              <div className="p-4 border border-[var(--border)] bg-[var(--muted)]/40 space-y-2 text-xs rounded-sm">
+                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--foreground)] font-semibold flex items-center gap-2">
+                  <Key className="size-3.5 text-[var(--primary)]" /> API Key Security & Setup
                 </div>
-              )}
-
-              {saved && (
-                <div className="mt-3 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs rounded-xl flex items-center gap-2 font-mono animate-in slide-in-from-top-2">
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-                  API key verified against Google Gemini service and saved to database.
-                </div>
-              )}
-            </div>
-
-            {/* Architecture Info Banner */}
-            <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-2 text-xs text-slate-400">
-              <div className="font-semibold text-slate-200 font-mono text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" /> Secure Vault Architecture
+                <p className="leading-relaxed text-[var(--muted-foreground)] font-sans text-xs">
+                  Provide your Google Gemini API key to enable AI-driven web scraping and data extraction. Your key is stored securely and is used strictly for processing your extraction jobs.
+                </p>
               </div>
-              <p className="leading-relaxed text-slate-400">
-                Your key is validated via a lightweight pre-flight call before saving to PostgreSQL. Celery workers dynamically consume the key with automatic Redis caching.
-              </p>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

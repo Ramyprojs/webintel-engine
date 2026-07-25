@@ -1,62 +1,114 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  
-  --color-mercury-bg: #090a0f;
-  --color-mercury-surface: #0f111a;
-  --color-mercury-border: rgba(255, 255, 255, 0.07);
-  
-  --color-brand-primary: #6366f1;
-  --color-brand-secondary: #8b5cf6;
-  --color-brand-accent: #10b981;
+  --font-sans: 'IBM Plex Mono', 'Inter', system-ui, monospace;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-serif: 'Newsreader', Georgia, serif;
+}
+
+:root {
+  color-scheme: light;
+
+  /* Warm printed paper canvas */
+  --background: oklch(0.955 0.011 82);
+  --foreground: oklch(0.24 0.012 65);
+
+  --card: oklch(0.985 0.006 84);
+  --card-foreground: oklch(0.24 0.012 65);
+
+  --popover: oklch(0.985 0.006 84);
+  --popover-foreground: oklch(0.24 0.012 65);
+
+  /* Oxblood primary accent */
+  --primary: oklch(0.47 0.15 26);
+  --primary-foreground: oklch(0.97 0.012 82);
+
+  --secondary: oklch(0.915 0.012 82);
+  --secondary-foreground: oklch(0.24 0.012 65);
+
+  --muted: oklch(0.915 0.012 82);
+  --muted-foreground: oklch(0.47 0.011 65);
+
+  --accent: oklch(0.9 0.014 82);
+  --accent-foreground: oklch(0.24 0.012 65);
+
+  --destructive: oklch(0.5 0.18 27);
+
+  /* Semantic status inks */
+  --ok: oklch(0.48 0.09 145);
+  --ok-foreground: oklch(0.97 0.012 82);
+  --work: oklch(0.56 0.1 68);
+  --work-foreground: oklch(0.2 0.03 68);
+
+  /* Warm hairlines */
+  --border: oklch(0.83 0.014 78);
+  --input: oklch(0.83 0.014 78);
+  --ring: oklch(0.47 0.15 26);
+
+  --sidebar: oklch(0.925 0.014 80);
+  --sidebar-foreground: oklch(0.24 0.012 65);
+  --sidebar-primary: oklch(0.47 0.15 26);
+  --sidebar-primary-foreground: oklch(0.97 0.012 82);
+  --sidebar-accent: oklch(0.89 0.016 80);
+  --sidebar-accent-foreground: oklch(0.24 0.012 65);
+  --sidebar-border: oklch(0.81 0.016 78);
 }
 
 @layer base {
+  * {
+    border-color: var(--border);
+  }
   body {
-    @apply text-slate-200 antialiased font-sans selection:bg-indigo-500/30 selection:text-white min-h-screen relative overflow-x-hidden;
-    background-color: #090a0f;
-    background-image: radial-gradient(at 50% 0%, rgba(99, 102, 241, 0.07) 0px, transparent 60%);
-    background-attachment: fixed;
-  }
-
-  /* Sleek dark scrollbars */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    background: rgba(9, 10, 15, 0.8);
-  }
-  ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 9999px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
   }
 }
 
-@layer components {
-  /* Clean Card System */
-  .glass-panel {
-    @apply bg-[#0f111a]/80 backdrop-blur-xl border border-white/[0.07] rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.4)] transition-colors duration-200;
-  }
-  
-  .glass-input {
-    @apply bg-[#07080c]/90 border border-white/[0.08] rounded-xl px-4 py-2.5 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/70 focus:ring-2 focus:ring-indigo-500/10 transition-colors duration-200 text-sm;
-  }
+/* Motion */
+@keyframes wi-shimmer {
+  from { background-position: 0 0; }
+  to { background-position: 24px 0; }
+}
 
-  .glass-button {
-    @apply bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-200 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-150 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed;
-  }
+@keyframes wi-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-  .glow-button {
-    @apply bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-xl text-sm transition-all duration-150 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed shadow-sm;
-  }
+@keyframes wi-row-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-  .command-pill {
-    @apply inline-flex items-center px-2 py-0.5 rounded bg-white/[0.05] border border-white/[0.1] text-[10px] font-mono text-slate-400;
+@keyframes wi-flash {
+  0% { background-color: color-mix(in oklch, var(--primary) 12%, transparent); }
+  100% { background-color: transparent; }
+}
+
+@layer utilities {
+  .wi-enter {
+    animation: wi-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .wi-row-in {
+    animation: wi-row-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .wi-flash {
+    animation: wi-flash 1.4s ease-out both;
+  }
+  /* Active progress bar: solid fill + animated diagonal stripe overlay */
+  .wi-bar-active {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      color-mix(in oklch, var(--work-foreground) 22%, transparent) 0,
+      color-mix(in oklch, var(--work-foreground) 22%, transparent) 4px,
+      transparent 4px,
+      transparent 8px
+    );
+    background-size: 24px 100%;
+    animation: wi-shimmer 0.9s linear infinite;
   }
 }
 
